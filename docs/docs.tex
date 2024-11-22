@@ -1,0 +1,153 @@
+% Created 2024-11-22 Fri 21:22
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\usepackage[a4paper, margin=1.2in]{geometry}
+\hypersetup{colorlinks=true,linkcolor=black}
+\author{Piotr Jabłoński (325163) i Paweł Wysocki (325248)}
+\date{Listopad 2024}
+\title{Dokumentacja wstepna projektu z POP}
+\hypersetup{
+ pdfauthor={Piotr Jabłoński (325163) i Paweł Wysocki (325248)},
+ pdftitle={Dokumentacja wstepna projektu z POP},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 29.4 (Org mode 9.7.11)}, 
+ pdflang={Polish}}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\pagebreak
+\section{Temat projektu}
+\label{sec:org3e40057}
+Zadaniem jest rozwiązanie problemu plecakowego dla danych skorelowanych i nieskorelowanych używając algorytmu PBIL oraz porównanie z inną metodą. Należy poddać się dokładnie statycznycznej analizie wyników. Jako alternatywną metodę rozwiązania wybraliśmy algorytm A*.
+\section{Opis problemu}
+\label{sec:org6b0099d}
+Problem plecakowy jest klasycznym problemem maksymalizacji zysku. Należy wybrać \(n\) przedmiotów z plecaka, tak aby ich sumaryczna waga (\(\sum_i^n{w_i}\)) była mniejsza niż pojemność plecaka \(W\). Każdy z przedmiotów ma dwa parametry - waga (\(w\)) oraz wartość (\(p\)).
+$$
+        max \sum_{i=1}^n{x_i \cdot v_i}
+$$
+$$
+        \sum_{i=1}^n{x_i \cdot w_i} <= W
+$$
+gdzie \(x_i \in \{0, 1\}\) - decyzja o wsadzeniu przedmiotu do pleceka
+\subsection{Funkcja zysku}
+\label{sec:orge5b1da9}
+$$
+        f(x) = \sum_{i=1}^n{x_i \cdot v_i},
+$$
+Wszystkie rozwiązania produkujące sumaryczną wagę większą od \(W\) są odrzucane.
+\subsection{Reprezentacja rozwiązania}
+\label{sec:orgd3d7332}
+W klasycznym zadaniu problemu plecakowego reprezentacja zadania jest wektorem bitów, gdzie pojedynczy bit oznaczenia podjęcie decyzji o wsadzeniu przedmiotu do plecaka, może wyglądać następująco
+\begin{verbatim}
+        01101011        wpakowanie 2,3,5,7 i 8 przedmiotu
+        11111111        wpakowanie wszystkich przedmiotów
+        00000000        nie wpakowanie żadnego przedmiotu
+\end{verbatim}
+\subsection{Reprezentacja zadania}
+\label{sec:orgcc0964d}
+W algorytmach ewolucyjnych reprezentacją zadania jest chromosom, natomiast w przypadku algorytmu PBIL sytuacja jest inna. PBIL optymalizuje cały genotyp populacji na raz. Każda populacja jest reprezentowana jako dystrybucja prawdopodobieństwa, w naszym przypadku jest wektorem prawdopodobieństw (\(p_i\)):
+$$
+        \boldsymbol{p}^t = [p_1^t, p_2^t, \dots, p_n^t]
+$$
+Ten wektor będzie optymalizowany według \uline{\hyperref[sec:org244d765]{funkcji zysku}}.
+\section{PBIL (Population-Based Incremental Learning)}
+\label{sec:orgf10ee1e}
+Należy do rodziny algorytmów ewolujnych (EA), ale znany jest ze swojej prostoty. Ta prostota wynika z faktu, że dystrybucja prawdopodobieństwa kolejnych bitów w chromosomie jest niezależna od punktu startowego. Dzięki temu algorytm można dowolnie modyfikować i optymalizować do konkretnego zadania.
+
+Algorytm działa na zasadzie iteracyjnej poprawie populacji początkowej poprzez:
+\begin{enumerate}
+\item wygenerowanie \(M\) osobników z populacji \(P^t\)
+\item ewualuacja i wybór najlepszych \(N\) osobników z \(M\) - podzbiór \(O^t\)
+\item tworzenie nowej populacji \(P^{t+1}\) na podstawie populacji \(P^t\) oraz \(O^t\)
+\item mutacja populacji \(P^{t+1}\)
+\end{enumerate}
+Kod w pseudo-pythonie przedstawiono poniżej:
+\begin{verbatim}
+M, N # const
+
+p = Population()
+t = 0
+while !stop:
+    Pt = sample(p, M)
+    Ot = select(Pt, N)
+    p = update(Ot, p, a)
+    p = mutate(p)
+    t += 1
+\end{verbatim}
+
+Warunek końca to może być ilość iteracji lub satysfakcjonująco dobre rozwiązanie. Algorytm należy zatrzymać gdy wektor prawdopodobieństwa się ustabilizuje tzn. gdy z iteracji do iteracji występuje bardzo mały stopień poprawy.
+\subsection{Funkcja \texttt{update}}
+\label{sec:org2b8ec42}
+Odpowiedzialna za aktualizację wektora prawdopodobieństw bazując na ilości jedynek w \textbf{x}, które znajdują się w \(N\) najlepszych rozwiązań. Wzór funkcji przedstawiono poniżej:
+$$
+        \boldsymbol{p}^{t+1}=(1-a) \cdot \boldsymbol{p}^t + a \cdot \frac{1}{N} \sum_{x \in O^t}x
+$$
+gdzie:
+\begin{itemize}
+\item \(a\) - learning rate
+\item \textbf{x} - binarny wektor opisany w \hyperref[sec:orgd3d7332]{\uline{reprezentacji rozwiązania}}
+\end{itemize}
+\section{A*}
+\label{sec:orgf031526}
+A* jest przykładem algorytmu wyczerpującego przeszukiwania przestrzeni. Jest to algorytm zupełny i optymalny, tym sensie, że jeżeli optymalne rozwiązanie istnieje, to zostanie znalezione. Jest to typowe narzędzie do rozwiązywania problemów drzewiastych, takich jak problem plecakowy. Uznaliśmy że cecha optymalności tego algorytmu pozwoli na ciekawą analizę wyników w porównaniu do alg. \hyperref[sec:orgf10ee1e]{\uline{PBIL}}.
+\subsection{Reprezentacja rozwiązania w A*}
+\label{sec:org7be9935}
+Nieco różni się od \hyperref[sec:orgd3d7332]{pierwszego podejścia} tym, że wektor musi zostać rozszerzony o znak ?, który oznacza \textbf{brak decyzji}. Algorytm działa na zasadzie tworzenia "ścieżki", więc tylko węzeł końcowy będzie reprezentował kompletne rozwiązanie, tzn. informacje o wpakowaniu każdego przedmiotu.
+\begin{verbatim}
+        ????????        punkt startowy algorytmu
+        01??????        wpakowanie 2; reszta nieznana - poziom 2 drzewa
+        01101???        wpakowanie 2,3,5; reszta nieznana
+        01101110        wpakowanie 2,3,5,6,7; węzeł końcowy
+\end{verbatim}
+\subsection{Funkcja zysku i heurystyczna}
+\label{sec:orgdb35587}
+W przypadku problemu plecakowego A* działa na zasadzie \textbf{maksymalizacji} funkcji \(f\), która jest definiowana przez:
+$$
+        f(x) = g(x) + h(x)
+$$
+gdzie:
+\begin{itemize}
+\item \(g(x)\) - funkcja zysku
+\item \(h(x)\) - funkcja heurystyczna
+\end{itemize}
+\subsubsection{Funkcja zysku}
+\label{sec:org244d765}
+Najbardziej sensownym podejściem będzie zsumowanie wartości przedmiotów \textbf{w plecaku}
+$$
+        g(x) = \sum_{i=1}^n{x_i \cdot v_i}
+$$
+gdzie \(x_i \in \{0, 1\}\)
+\subsubsection{Funkcja heurystyczna}
+\label{sec:org76d913e}
+Musi być:
+\begin{itemize}
+\item dopuszczalna: \(g(x) + h(x) >= g(x_t)\)
+\item monotoniczna: \(g(x_j) + h(x_j) <= g(x_i) + h(x_i)\)
+\end{itemize}
+Dla problemu plecakowego można użyć funkcji heurystycznej postaci:
+$$
+        h(x) = \sum_{i:x_i=?}^n{y_i \cdot p_i}
+$$
+gdzie
+\begin{itemize}
+\item \(i:x_i=?\) - indeksy w \(x\) dla przedmiotów o statusie ?
+\item \(y_i\) to zmienna ułamkowa, definiowana przez równość
+\end{itemize}
+$$
+        \sum_{i:x_i=?}^n{y_i \cdot w_i} = W - \sum_{i=1}^n{x_i \cdot w_i}
+$$
+\end{document}
