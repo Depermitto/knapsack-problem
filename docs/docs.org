@@ -15,7 +15,7 @@ $$
         max \sum_{i=1}^n{x_i \cdot v_i}
 $$
 $$
-        \sum_{i=1}^n{x_i \cdot w_i} <= W
+        \sum_{i=1}^n{x_i \cdot w_i} \leq W
 $$
 gdzie $x_i \in \{0, 1\}$ - decyzja o wsadzeniu przedmiotu do pleceka
 
@@ -33,15 +33,9 @@ W klasycznym zadaniu problemu plecakowego reprezentacja zadania jest wektorem bi
         00000000        nie wpakowanie żadnego przedmiotu
 #+end_example
 
-** Reprezentacja zadania
-W algorytmach ewolucyjnych reprezentacją zadania jest chromosom, natomiast w przypadku algorytmu PBIL sytuacja jest inna. PBIL optymalizuje cały genotyp populacji na raz. Każda populacja jest reprezentowana jako dystrybucja prawdopodobieństwa, w naszym przypadku jest wektorem prawdopodobieństw ($p_i$):
-$$
-        \boldsymbol{p}^t = [p_1^t, p_2^t, \dots, p_n^t]
-$$
-Ten wektor będzie optymalizowany według _[[Funkcja zysku][funkcji zysku]]_.
-
+#+latex: \pagebreak
 * PBIL (Population-Based Incremental Learning)
-Należy do rodziny algorytmów ewolujnych (EA), ale znany jest ze swojej prostoty. Ta prostota wynika z faktu, że dystrybucja prawdopodobieństwa kolejnych bitów w chromosomie jest niezależna od punktu startowego. Dzięki temu algorytm można dowolnie modyfikować i optymalizować do konkretnego zadania.
+Należy do rodziny algorytmów EDA (Estimation of Distribution Algorithm), znany jest ze swojej prostoty. Ta prostota wynika z faktu, że dystrybucja prawdopodobieństwa kolejnych bitów w chromosomie jest niezależna od punktu startowego. Dzięki temu algorytm można dowolnie modyfikować i optymalizować do konkretnego zadania.
 
 Algorytm działa na zasadzie iteracyjnej poprawie populacji początkowej poprzez:
 1. wygenerowanie $M$ osobników z populacji $P^t$
@@ -63,6 +57,14 @@ while !stop:
 #+end_src
 
 Warunek końca to może być ilość iteracji lub satysfakcjonująco dobre rozwiązanie. Algorytm należy zatrzymać gdy wektor prawdopodobieństwa się ustabilizuje tzn. gdy z iteracji do iteracji występuje bardzo mały stopień poprawy.
+
+** Reprezentacja zadania
+W algorytmach ewolucyjnych rozwiązaniem zadania jest osobnik, a w każdej iteracji osobniki są mutowane indywidualnie. W przypadku algorytmów EDA sytuacja jest inna - optymalizuje się cały genotyp populacji na raz. Każda populacja jest reprezentowana jako dystrybucja prawdopodobieństwa. Algorytm PBIL należy do tej grupy i reprezentuje populację jako wektor prawdopodobieństw ($p_i$):
+$$
+        \boldsymbol{p}^t = [p_1^t, p_2^t, \dots, p_n^t]
+$$
+Ten wektor będzie optymalizowany według _[[Funkcja zysku][funkcji zysku]]_.
+
 
 ** Funkcja ~update~
 Odpowiedzialna za aktualizację wektora prawdopodobieństw bazując na ilości jedynek w *x*, które znajdują się w $N$ najlepszych rozwiązań. Wzór funkcji przedstawiono poniżej:
@@ -97,14 +99,14 @@ gdzie:
 *** Funkcja zysku
 Najbardziej sensownym podejściem będzie zsumowanie wartości przedmiotów *w plecaku*
 $$
-        g(x) = \sum_{i=1}^n{x_i \cdot v_i}
+        g(x) = \sum_{i:x_i=1}^n{v_i}
 $$
-gdzie $x_i \in \{0, 1\}$
+Jeżeli wpakujemy dodatkowy przedmiot: rozwiązanie zwiększy swoją sumaryczną wartość się o wartość wsadzonego przedmiotu.
 
 *** Funkcja heurystyczna
 Musi być:
-- dopuszczalna: $g(x) + h(x) >= g(x_t)$
-- monotoniczna: $g(x_j) + h(x_j) <= g(x_i) + h(x_i)$
+- dopuszczalna: $g(x) + h(x) \geq g(x_t)$
+- monotoniczna: $g(x_j) + h(x_j) \leq g(x_i) + h(x_i)$
 Dla problemu plecakowego można użyć funkcji heurystycznej postaci:
 $$
         h(x) = \sum_{i:x_i=?}^n{y_i \cdot p_i}
@@ -115,3 +117,22 @@ gdzie
 $$
         \sum_{i:x_i=?}^n{y_i \cdot w_i} = W - \sum_{i=1}^n{x_i \cdot w_i}
 $$
+
+* Plan eksperymentów
+Aby przeprowadzić dokładną analizę statystyczną porównującą efektywność obu metod, wymagane jest odpowiednie środowisko testowe. Do tego zadania wybraliśmy 3 różne problemy plecakowe, które różnią się od siebie poziomem skorelowania danych:
+1. Dane nieskorelowane
+2. Dane średnio skorelowane
+3. Dane mocno skorelowane
+Testy przeprowadzimy dla różnej maksymalnej ilości przedmiotów, wagi przedmiotu oraz pojemnośic plecaka. Początkowo przyjmujemy $n = 100$, $v = 10$, $W = 100$.
+
+Takie podejście pozwoli na sprawdzenie efektywności metody _[[PBIL (Population-Based Incremental Learning)][PBIL]]_ w porównaniu do metody [[A*][_A*_]], które zawsze znajdzie optymalne rozwiązanie. Każdy eksperyment będzie uruchomiony wielokrotnie, a wyniki uśrednione z dokładnością do drugiego miejsca po przecinku.
+
+Parametr, który nas interesuje podczas testowania efektywności najbardziej to *maksymalna nagrana wartość funkcji celu* oraz *ilość obliczeń funkcji celu*. Do analizy wizualnej posłużą nam wykresy, które mapują wartości funkcji celu na ilość iteracji algorytmu oraz tabelki ze średnimi wartościami i standardowym odchyleniem. Informacje, które będziemy zbierać:
+#+begin_example
+{
+        maksymalna_wartość_funkcji_celu,        # najlepszego osobnika
+        końcowa_wartość_funkcji_celu,           #
+        średnia_wartość_funkcji_celu,           # całej populacji
+        odchylenie_standardowe_funkcji_celu     #
+}
+#+end_example
