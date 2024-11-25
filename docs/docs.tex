@@ -1,4 +1,4 @@
-% Created 2024-11-25 pon 17:25
+% Created 2024-11-25 pon 19:07
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -31,11 +31,11 @@
 
 \pagebreak
 \section{Temat projektu}
-\label{sec:orge577c5b}
+\label{sec:org66d662c}
 Zadaniem jest rozwiązanie problemu plecakowego dla danych skorelowanych i nieskorelowanych używając algorytmu PBIL oraz porównanie z inną metodą. Należy poddać się dokładnie statycznycznej analizie wyników. Jako alternatywną metodę rozwiązania wybraliśmy algorytm A*.
 \section{Opis problemu}
-\label{sec:org8993f43}
-Problem plecakowy jest klasycznym problemem maksymalizacji zysku. Należy wybrać n przedmiotów z plecaka, tak aby ich sumaryczna waga (\(\sum_i^n{w_i}\)) była mniejsza niż pojemność plecaka W. Każdy z przedmiotów ma dwa parametry - waga (w) oraz wartość (p).
+\label{sec:org4d991fb}
+Problem plecakowy jest klasycznym problemem maksymalizacji celu. Należy wybrać n przedmiotów z plecaka, tak aby ich sumaryczna waga (\(\sum_i^n{w_i}\)) była mniejsza niż pojemność plecaka W. Każdy z przedmiotów ma dwa parametry - waga (w) oraz wartość (p).
 \[
         max \sum_{i=1}^n{x_i \cdot v_i}
 \]
@@ -43,14 +43,14 @@ Problem plecakowy jest klasycznym problemem maksymalizacji zysku. Należy wybra�
         \sum_{i=1}^n{x_i \cdot w_i} \leq W
 \]
 gdzie x\textsubscript{i} \(\in\) \{0, 1\} - decyzja o wsadzeniu przedmiotu do pleceka
-\subsection{Funkcja zysku}
-\label{sec:org235d43a}
+\subsection{Funkcja celu}
+\label{sec:orgfed3d26}
 \[
         f(x) = \sum_{i=1}^n{x_i \cdot v_i},
 \]
 Wszystkie rozwiązania produkujące sumaryczną wagę większą od W są odrzucane.
 \subsection{Reprezentacja rozwiązania}
-\label{sec:org357917a}
+\label{sec:org7c490b7}
 W klasycznym zadaniu problemu plecakowego reprezentacja zadania jest wektorem bitów, gdzie pojedynczy bit oznaczenia podjęcie decyzji o wsadzeniu przedmiotu do plecaka, może wyglądać następująco
 \begin{verbatim}
         01101011        wpakowanie 2,3,5,7 i 8 przedmiotu
@@ -60,7 +60,7 @@ W klasycznym zadaniu problemu plecakowego reprezentacja zadania jest wektorem bi
 
 \pagebreak
 \section{PBIL (Population-Based Incremental Learning)}
-\label{sec:org20e38e5}
+\label{sec:org5c31017}
 Należy do rodziny algorytmów EDA (Estimation of Distribution Algorithm), znany jest ze swojej prostoty. Ta prostota wynika z faktu, że dystrybucja prawdopodobieństwa kolejnych bitów w chromosomie jest niezależna od punktu startowego. Dzięki temu algorytm można dowolnie modyfikować i optymalizować do konkretnego zadania.
 
 Algorytm działa na zasadzie iteracyjnej poprawie populacji początkowej poprzez:
@@ -86,14 +86,14 @@ while !stop:
 
 Warunek końca to może być ilość iteracji lub satysfakcjonująco dobre rozwiązanie. Algorytm należy zatrzymać gdy wektor prawdopodobieństwa się ustabilizuje tzn. gdy z iteracji do iteracji występuje bardzo mały stopień poprawy.
 \subsection{Reprezentacja zadania}
-\label{sec:org230a810}
+\label{sec:org0be5ed0}
 W algorytmach ewolucyjnych rozwiązaniem zadania jest osobnik, a w każdej iteracji osobniki są mutowane indywidualnie. W przypadku algorytmów EDA sytuacja jest inna - optymalizuje się cały genotyp populacji na raz. Każda populacja jest reprezentowana jako dystrybucja prawdopodobieństwa. Algorytm PBIL należy do tej grupy i reprezentuje populację jako wektor prawdopodobieństw (p\textsubscript{i}):
 \[
         \boldsymbol{p}^t = [p_1^t, p_2^t, \dots, p_n^t]
 \]
-Ten wektor będzie optymalizowany według \uline{\hyperref[sec:org3b8c70e]{funkcji zysku}}.
+Ten wektor będzie optymalizowany według \uline{\hyperref[sec:orgfed3d26]{funkcji celu}}.
 \subsection{Funkcja \texttt{update}}
-\label{sec:orga587885}
+\label{sec:orga4c09fd}
 Odpowiedzialna za aktualizację wektora prawdopodobieństw bazując na ilości jedynek w \textbf{x}, które znajdują się w N najlepszych rozwiązań. Wzór funkcji przedstawiono poniżej:
 \[
         \boldsymbol{p}^{t+1}=(1-a) \cdot \boldsymbol{p}^t + a \cdot \frac{1}{N} \sum_{x \in O^t}x
@@ -101,14 +101,14 @@ Odpowiedzialna za aktualizację wektora prawdopodobieństw bazując na ilości j
 gdzie:
 \begin{itemize}
 \item a - learning rate
-\item \textbf{x} - binarny wektor opisany w \hyperref[sec:org357917a]{\uline{reprezentacji rozwiązania}}
+\item \textbf{x} - binarny wektor opisany w \hyperref[sec:org7c490b7]{\uline{reprezentacji rozwiązania}}
 \end{itemize}
 \section{A*}
-\label{sec:org9b81fc2}
-A* jest przykładem algorytmu wyczerpującego przeszukiwania przestrzeni. Jest to algorytm zupełny i optymalny, tym sensie, że jeżeli optymalne rozwiązanie istnieje, to zostanie znalezione. Jest to typowe narzędzie do rozwiązywania problemów drzewiastych, takich jak problem plecakowy. Uznaliśmy że cecha optymalności tego algorytmu pozwoli na ciekawą analizę wyników w porównaniu do alg. \hyperref[sec:org20e38e5]{\uline{PBIL}}.
+\label{sec:orgd1b064a}
+A* jest przykładem algorytmu wyczerpującego przeszukiwania przestrzeni. Jest to algorytm zupełny i optymalny, tym sensie, że jeżeli optymalne rozwiązanie istnieje, to zostanie znalezione. Jest to typowe narzędzie do rozwiązywania problemów drzewiastych, takich jak problem plecakowy. Uznaliśmy że cecha optymalności tego algorytmu pozwoli na ciekawą analizę wyników w porównaniu do alg. \hyperref[sec:org5c31017]{\uline{PBIL}}.
 \subsection{Reprezentacja rozwiązania w A*}
-\label{sec:orgd9a5091}
-Nieco różni się od \hyperref[sec:org357917a]{pierwszego podejścia} tym, że wektor musi zostać rozszerzony o znak ?, który oznacza \textbf{brak decyzji}. Algorytm działa na zasadzie tworzenia "ścieżki", więc tylko węzeł końcowy będzie reprezentował kompletne rozwiązanie, tzn. informacje o wpakowaniu każdego przedmiotu.
+\label{sec:org4ecd5a9}
+Nieco różni się od \hyperref[sec:org7c490b7]{pierwszego podejścia} tym, że wektor musi zostać rozszerzony o znak ?, który oznacza \textbf{brak decyzji}. Algorytm działa na zasadzie tworzenia "ścieżki", więc tylko węzeł końcowy będzie reprezentował kompletne rozwiązanie, tzn. informacje o wpakowaniu każdego przedmiotu.
 \begin{verbatim}
         ????????        punkt startowy algorytmu
         01??????        wpakowanie 2; reszta nieznana - poziom 2 drzewa
@@ -116,7 +116,7 @@ Nieco różni się od \hyperref[sec:org357917a]{pierwszego podejścia} tym, że 
         01101110        wpakowanie 2,3,5,6,7; węzeł końcowy
 \end{verbatim}
 \subsection{Funkcja zysku i heurystyczna}
-\label{sec:orgaf87a29}
+\label{sec:orgd7b7848}
 W przypadku problemu plecakowego A* działa na zasadzie \textbf{maksymalizacji} funkcji f, która jest definiowana przez:
 \[
         f(x) = g(x) + h(x)
@@ -127,14 +127,14 @@ gdzie:
 \item h(x) - funkcja heurystyczna
 \end{itemize}
 \subsubsection{Funkcja zysku}
-\label{sec:org3b8c70e}
+\label{sec:orgf97f734}
 Najbardziej sensownym podejściem będzie zsumowanie wartości przedmiotów \textbf{w plecaku}
 \[
         g(x) = \sum_{i:x_i=1}^n{v_i}
 \]
 Jeżeli wpakujemy dodatkowy przedmiot: rozwiązanie zwiększy swoją sumaryczną wartość się o wartość wsadzonego przedmiotu.
 \subsubsection{Funkcja heurystyczna}
-\label{sec:orgc1f6e15}
+\label{sec:org8963b0e}
 Musi być:
 \begin{itemize}
 \item dopuszczalna: g(x) + h(x) \(\ge\) g(x\textsubscript{t})
@@ -153,7 +153,7 @@ gdzie
         \sum_{i:x_i=?}^n{y_i \cdot w_i} = W - \sum_{i=1}^n{x_i \cdot w_i}
 \]
 \section{Plan eksperymentów}
-\label{sec:org6d89171}
+\label{sec:org78ee836}
 Aby przeprowadzić dokładną analizę statystyczną porównującą efektywność obu metod, wymagane jest odpowiednie środowisko testowe. Do tego zadania wybraliśmy 3 różne problemy plecakowe, które różnią się od siebie poziomem skorelowania danych:
 \begin{enumerate}
 \item Dane nieskorelowane
@@ -162,7 +162,7 @@ Aby przeprowadzić dokładną analizę statystyczną porównującą efektywnoś�
 \end{enumerate}
 Testy przeprowadzimy dla różnej maksymalnej ilości przedmiotów, wagi przedmiotu oraz pojemnośic plecaka. Początkowo przyjmujemy n = 100, v = 10, W = 100.
 
-Takie podejście pozwoli na sprawdzenie efektywności metody \uline{\hyperref[sec:org20e38e5]{PBIL}} w porównaniu do metody \hyperref[sec:org9b81fc2]{\uline{A*}}, które zawsze znajdzie optymalne rozwiązanie. Każdy eksperyment będzie uruchomiony wielokrotnie, a wyniki uśrednione z dokładnością do drugiego miejsca po przecinku.
+Takie podejście pozwoli na sprawdzenie efektywności metody \uline{\hyperref[sec:org5c31017]{PBIL}} w porównaniu do metody \hyperref[sec:orgd1b064a]{\uline{A*}}, które zawsze znajdzie optymalne rozwiązanie. Każdy eksperyment będzie uruchomiony wielokrotnie, a wyniki uśrednione z dokładnością do drugiego miejsca po przecinku.
 
 Parametr, który nas interesuje podczas testowania efektywności najbardziej to \textbf{maksymalna nagrana wartość funkcji celu} oraz \textbf{ilość obliczeń funkcji celu}. Do analizy wizualnej posłużą nam wykresy, które mapują wartości funkcji celu na ilość iteracji algorytmu oraz tabelki ze średnimi wartościami i standardowym odchyleniem. Informacje, które będziemy zbierać:
 \begin{verbatim}

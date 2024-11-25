@@ -10,7 +10,7 @@
 Zadaniem jest rozwiązanie problemu plecakowego dla danych skorelowanych i nieskorelowanych używając algorytmu PBIL oraz porównanie z inną metodą. Należy poddać się dokładnie statycznycznej analizie wyników. Jako alternatywną metodę rozwiązania wybraliśmy algorytm A*.
 
 * Opis problemu
-Problem plecakowy jest klasycznym problemem maksymalizacji zysku. Należy wybrać n przedmiotów z plecaka, tak aby ich sumaryczna waga (\(\sum_i^n{w_i}\)) była mniejsza niż pojemność plecaka W. Każdy z przedmiotów ma dwa parametry - waga (w) oraz wartość (p).
+Problem plecakowy jest klasycznym problemem maksymalizacji celu. Należy wybrać n przedmiotów z plecaka, tak aby ich sumaryczna waga (\(\sum_i^n{w_i}\)) była mniejsza niż pojemność plecaka W. Każdy z przedmiotów ma dwa parametry - waga (w) oraz wartość (p).
 \[
         max \sum_{i=1}^n{x_i \cdot v_i}
 \]
@@ -19,7 +19,7 @@ Problem plecakowy jest klasycznym problemem maksymalizacji zysku. Należy wybra�
 \]
 gdzie x_i \in {0, 1} - decyzja o wsadzeniu przedmiotu do pleceka
 
-** Funkcja zysku
+** Funkcja celu
 \[
         f(x) = \sum_{i=1}^n{x_i \cdot v_i},
 \]
@@ -63,8 +63,7 @@ W algorytmach ewolucyjnych rozwiązaniem zadania jest osobnik, a w każdej itera
 \[
         \boldsymbol{p}^t = [p_1^t, p_2^t, \dots, p_n^t]
 \]
-Ten wektor będzie optymalizowany według _[[Funkcja zysku][funkcji zysku]]_.
-
+Ten wektor będzie optymalizowany według _[[Funkcja celu][funkcji celu]]_.
 
 ** Funkcja ~update~
 Odpowiedzialna za aktualizację wektora prawdopodobieństw bazując na ilości jedynek w *x*, które znajdują się w N najlepszych rozwiązań. Wzór funkcji przedstawiono poniżej:
