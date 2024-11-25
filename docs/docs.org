@@ -10,20 +10,20 @@
 Zadaniem jest rozwiązanie problemu plecakowego dla danych skorelowanych i nieskorelowanych używając algorytmu PBIL oraz porównanie z inną metodą. Należy poddać się dokładnie statycznycznej analizie wyników. Jako alternatywną metodę rozwiązania wybraliśmy algorytm A*.
 
 * Opis problemu
-Problem plecakowy jest klasycznym problemem maksymalizacji zysku. Należy wybrać $n$ przedmiotów z plecaka, tak aby ich sumaryczna waga ($\sum_i^n{w_i}$) była mniejsza niż pojemność plecaka $W$. Każdy z przedmiotów ma dwa parametry - waga ($w$) oraz wartość ($p$).
-$$
+Problem plecakowy jest klasycznym problemem maksymalizacji zysku. Należy wybrać n przedmiotów z plecaka, tak aby ich sumaryczna waga (\(\sum_i^n{w_i}\)) była mniejsza niż pojemność plecaka W. Każdy z przedmiotów ma dwa parametry - waga (w) oraz wartość (p).
+\[
         max \sum_{i=1}^n{x_i \cdot v_i}
-$$
-$$
+\]
+\[
         \sum_{i=1}^n{x_i \cdot w_i} \leq W
-$$
-gdzie $x_i \in \{0, 1\}$ - decyzja o wsadzeniu przedmiotu do pleceka
+\]
+gdzie x_i \in {0, 1} - decyzja o wsadzeniu przedmiotu do pleceka
 
 ** Funkcja zysku
-$$
+\[
         f(x) = \sum_{i=1}^n{x_i \cdot v_i},
-$$
-Wszystkie rozwiązania produkujące sumaryczną wagę większą od $W$ są odrzucane.
+\]
+Wszystkie rozwiązania produkujące sumaryczną wagę większą od W są odrzucane.
 
 ** Reprezentacja rozwiązania
 W klasycznym zadaniu problemu plecakowego reprezentacja zadania jest wektorem bitów, gdzie pojedynczy bit oznaczenia podjęcie decyzji o wsadzeniu przedmiotu do plecaka, może wyglądać następująco
@@ -38,10 +38,10 @@ W klasycznym zadaniu problemu plecakowego reprezentacja zadania jest wektorem bi
 Należy do rodziny algorytmów EDA (Estimation of Distribution Algorithm), znany jest ze swojej prostoty. Ta prostota wynika z faktu, że dystrybucja prawdopodobieństwa kolejnych bitów w chromosomie jest niezależna od punktu startowego. Dzięki temu algorytm można dowolnie modyfikować i optymalizować do konkretnego zadania.
 
 Algorytm działa na zasadzie iteracyjnej poprawie populacji początkowej poprzez:
-1. wygenerowanie $M$ osobników z populacji $P^t$
-2. ewualuacja i wybór najlepszych $N$ osobników z $M$ - podzbiór $O^t$
-3. tworzenie nowej populacji $P^{t+1}$ na podstawie populacji $P^t$ oraz $O^t$
-4. mutacja populacji $P^{t+1}$
+1. wygenerowanie M osobników z populacji P^t
+2. ewualuacja i wybór najlepszych N osobników z M - podzbiór O^t
+3. tworzenie nowej populacji P^{t+1} na podstawie populacji P^t oraz O^t
+4. mutacja populacji P^{t+1}
 Kod w pseudo-pythonie przedstawiono poniżej:
 #+begin_src python
 M, N # const
@@ -59,20 +59,20 @@ while !stop:
 Warunek końca to może być ilość iteracji lub satysfakcjonująco dobre rozwiązanie. Algorytm należy zatrzymać gdy wektor prawdopodobieństwa się ustabilizuje tzn. gdy z iteracji do iteracji występuje bardzo mały stopień poprawy.
 
 ** Reprezentacja zadania
-W algorytmach ewolucyjnych rozwiązaniem zadania jest osobnik, a w każdej iteracji osobniki są mutowane indywidualnie. W przypadku algorytmów EDA sytuacja jest inna - optymalizuje się cały genotyp populacji na raz. Każda populacja jest reprezentowana jako dystrybucja prawdopodobieństwa. Algorytm PBIL należy do tej grupy i reprezentuje populację jako wektor prawdopodobieństw ($p_i$):
-$$
+W algorytmach ewolucyjnych rozwiązaniem zadania jest osobnik, a w każdej iteracji osobniki są mutowane indywidualnie. W przypadku algorytmów EDA sytuacja jest inna - optymalizuje się cały genotyp populacji na raz. Każda populacja jest reprezentowana jako dystrybucja prawdopodobieństwa. Algorytm PBIL należy do tej grupy i reprezentuje populację jako wektor prawdopodobieństw (p_i):
+\[
         \boldsymbol{p}^t = [p_1^t, p_2^t, \dots, p_n^t]
-$$
+\]
 Ten wektor będzie optymalizowany według _[[Funkcja zysku][funkcji zysku]]_.
 
 
 ** Funkcja ~update~
-Odpowiedzialna za aktualizację wektora prawdopodobieństw bazując na ilości jedynek w *x*, które znajdują się w $N$ najlepszych rozwiązań. Wzór funkcji przedstawiono poniżej:
-$$
+Odpowiedzialna za aktualizację wektora prawdopodobieństw bazując na ilości jedynek w *x*, które znajdują się w N najlepszych rozwiązań. Wzór funkcji przedstawiono poniżej:
+\[
         \boldsymbol{p}^{t+1}=(1-a) \cdot \boldsymbol{p}^t + a \cdot \frac{1}{N} \sum_{x \in O^t}x
-$$
+\]
 gdzie:
-- $a$ - learning rate
+- a - learning rate
 - *x* - binarny wektor opisany w [[Reprezentacja rozwiązania][_reprezentacji rozwiązania_]]
 
 * A*
@@ -88,42 +88,42 @@ Nieco różni się od [[Reprezentacja rozwiązania][pierwszego podejścia]] tym,
 #+end_example
 
 ** Funkcja zysku i heurystyczna
-W przypadku problemu plecakowego A* działa na zasadzie *maksymalizacji* funkcji $f$, która jest definiowana przez:
-$$
+W przypadku problemu plecakowego A* działa na zasadzie *maksymalizacji* funkcji f, która jest definiowana przez:
+\[
         f(x) = g(x) + h(x)
-$$
+\]
 gdzie:
-- $g(x)$ - funkcja zysku
-- $h(x)$ - funkcja heurystyczna
+- g(x) - funkcja zysku
+- h(x) - funkcja heurystyczna
 
 *** Funkcja zysku
 Najbardziej sensownym podejściem będzie zsumowanie wartości przedmiotów *w plecaku*
-$$
+\[
         g(x) = \sum_{i:x_i=1}^n{v_i}
-$$
+\]
 Jeżeli wpakujemy dodatkowy przedmiot: rozwiązanie zwiększy swoją sumaryczną wartość się o wartość wsadzonego przedmiotu.
 
 *** Funkcja heurystyczna
 Musi być:
-- dopuszczalna: $g(x) + h(x) \geq g(x_t)$
-- monotoniczna: $g(x_j) + h(x_j) \leq g(x_i) + h(x_i)$
+- dopuszczalna: g(x) + h(x) \geq g(x_t)
+- monotoniczna: g(x_j) + h(x_j) \leq g(x_i) + h(x_i)
 Dla problemu plecakowego można użyć funkcji heurystycznej postaci:
-$$
+\[
         h(x) = \sum_{i:x_i=?}^n{y_i \cdot p_i}
-$$
+\]
 gdzie
-- $i:x_i=?$ - indeksy w $x$ dla przedmiotów o statusie ?
-- $y_i$ to zmienna ułamkowa, definiowana przez równość
-$$
+- i:x_i=? - indeksy w x dla przedmiotów o statusie ?
+- y_i to zmienna ułamkowa, definiowana przez równość
+\[
         \sum_{i:x_i=?}^n{y_i \cdot w_i} = W - \sum_{i=1}^n{x_i \cdot w_i}
-$$
+\]
 
 * Plan eksperymentów
 Aby przeprowadzić dokładną analizę statystyczną porównującą efektywność obu metod, wymagane jest odpowiednie środowisko testowe. Do tego zadania wybraliśmy 3 różne problemy plecakowe, które różnią się od siebie poziomem skorelowania danych:
 1. Dane nieskorelowane
 2. Dane średnio skorelowane
 3. Dane mocno skorelowane
-Testy przeprowadzimy dla różnej maksymalnej ilości przedmiotów, wagi przedmiotu oraz pojemnośic plecaka. Początkowo przyjmujemy $n = 100$, $v = 10$, $W = 100$.
+Testy przeprowadzimy dla różnej maksymalnej ilości przedmiotów, wagi przedmiotu oraz pojemnośic plecaka. Początkowo przyjmujemy n = 100, v = 10, W = 100.
 
 Takie podejście pozwoli na sprawdzenie efektywności metody _[[PBIL (Population-Based Incremental Learning)][PBIL]]_ w porównaniu do metody [[A*][_A*_]], które zawsze znajdzie optymalne rozwiązanie. Każdy eksperyment będzie uruchomiony wielokrotnie, a wyniki uśrednione z dokładnością do drugiego miejsca po przecinku.
 
