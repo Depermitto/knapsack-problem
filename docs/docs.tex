@@ -15,6 +15,7 @@
 \usepackage[a4paper, margin=1.2in]{geometry}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\setlength{\parindent}{0pt}
 \hypersetup{colorlinks=true,linkcolor=black}
 \author{Piotr Jabłoński (325163) i Paweł Wysocki (325248)}
 \date{Listopad 2024}
@@ -44,21 +45,21 @@ Dysponujemy w nim listą $n$ przedmiotów, gdzie dla każdego z nich zdefiniowan
 - waga $w_i$.\\
 Jest to problem maksymalizacyjny - należy wybrać z puli $k$ przedmiotów, dla których:
 \begin{itemize}
-    \item suma wartości $\sum_{i=1}^n y_i p_i$ jest największa,
-    \item suma ich wag $\sum_{i=1}^n y_i w_i$ nie przekracza maksymalnej pojemności plecaka $W$,
-    \item gdzie $y_i \in \{0,1\}$ - decyzja o spakowaniu przedmiotu.
+    \item suma wartości $\sum_{i=1}^n x_i p_i$ jest największa,
+    \item suma ich wag $\sum_{i=1}^n x_i w_i$ nie przekracza maksymalnej pojemności plecaka $W$,
+    \item gdzie $x_i \in \{0,1\}$ - decyzja o spakowaniu przedmiotu.
 \end{itemize}
 
 \subsection{Funkcja celu}
 \label{sec:orgfed3d26}
 \textbf{Maksymalizowaną} funkcją celu w problemie plecakowym jest wspomniana wcześniej suma wartości:
 $$
-f(x) = \sum_{i=1}^n y_i \cdot p_i
+f(x) = \sum_{i=1}^n x_i \cdot p_i
 $$
 Rozwiązania niespełniające wymagania wagowego \textbf{zostaną obciążone funkcją kary w postaci sumy wartości wszystkich dostępnych przedmiotów}.
 \subsection{Reprezentacja rozwiązania}
 \label{sec:org7c490b7}
-W klasycznym problemie plecakowym reprezentacją zadania jest wektorem bitów, gdzie $i$-ty bit informuje o decyzji, czy $i$-ty przedmiot został spakowany (efektywnie jest to reprezentacja wspomnianej we wcześniejszych wzorach zmiennej $y_i$). \\
+W klasycznym problemie plecakowym reprezentacją zadania jest wektorem bitów, gdzie $i$-ty bit informuje o decyzji, czy $i$-ty przedmiot został spakowany (efektywnie jest to reprezentacja wspomnianej we wcześniejszych wzorach zmiennej $x_i$). \\
 Przykładowe reprezentacje mogą wyglądać następująco:
 \begin{verbatim}
         01101011        spakowanie przedmiotów nr 2,3,5,7 i 8
@@ -67,18 +68,19 @@ Przykładowe reprezentacje mogą wyglądać następująco:
 \end{verbatim}
 
 \pagebreak
-\section{PBIL (Population-Based Incremental Learning)}
+\section{Algorytmy}
+\subsection{PBIL (Population-Based Incremental Learning)}
 \label{sec:org5c31017}
-Należy do rodziny algorytmów EDA (Estimation of Distribution Algorithm), znany jest ze swojej prostoty. Ta prostota wynika z faktu, że dystrybucja prawdopodobieństwa kolejnych bitów w chromosomie jest niezależna od punktu startowego. Dzięki temu algorytm można dowolnie modyfikować i optymalizować do konkretnego zadania.
-
-Algorytm działa na zasadzie iteracyjnej poprawie populacji początkowej poprzez:
+Algorytm PBIL należy do rodziny algorytmów EDA (Estimation of Distribution Algorithm), polegających na próbkowaniu i oszacowywaniu rozkładu prawdopodobieństwa wybranych rozwiązań zawartych w populacji, zamiast klasycznej ewolucji przez losowe krzyżowanie osobników. Dystrybucja prawdopodobieństwa kolejnych bitów w chromosomie jest niezależna od punktu startowego, dzięki temu algorytm można swobodnie modyfikować i optymalizować pod kątem własnych potrzeb.\\\\
+Algorytm działa na zasadzie iteracyjnej poprawy populacji początkowej poprzez:
 \begin{enumerate}
-\item wygenerowanie M osobników z populacji P\textsuperscript{t}
-\item ewualuacja i wybór najlepszych N osobników z M - podzbiór O\textsuperscript{t}
-\item tworzenie nowej populacji P\textsuperscript{t+1} na podstawie populacji P\textsuperscript{t} oraz O\textsuperscript{t}
-\item mutacja populacji P\textsuperscript{t+1}
+\item generację $M$ osobników z populacji $P^t$
+\item ewaluację i wybór najlepszych $N$ wygenerowanych osobników - podzbiór $O^t$
+\item tworzenie nowej populacji $P^{t+1}$ na podstawie populacji $P^t$ oraz $O^t$
+\item mutację populacji $P^{t+1}$
 \end{enumerate}
-Kod w pseudo-pythonie przedstawiono poniżej:
+
+\subsubsection{Pseudokod algorytmu}
 \begin{algorithm}[h]
 \caption{Algorytm PBIL}
 \begin{algorithmic}
@@ -99,93 +101,109 @@ Kod w pseudo-pythonie przedstawiono poniżej:
 \end{algorithmic}
 \end{algorithm}
 
-Warunek końca to może być ilość iteracji lub satysfakcjonująco dobre rozwiązanie. Algorytm należy zatrzymać gdy wektor prawdopodobieństwa się ustabilizuje tzn. gdy z iteracji do iteracji występuje bardzo mały stopień poprawy.
-\subsection{Reprezentacja zadania}
+Warunkiem stopu będzie osiągnięcie limitu iteracji, osiągnięcie satysfakcjonującego rozwiązania lub ustabilizowanie się wektora prawdopodobieństwa (bardzo mały stopień poprawy jakości dla kolejnych generacji).
+\subsubsection{Reprezentacja zadania}
 \label{sec:org0be5ed0}
-W algorytmach ewolucyjnych rozwiązaniem zadania jest osobnik, a w każdej iteracji osobniki są mutowane indywidualnie. W przypadku algorytmów EDA sytuacja jest inna - optymalizuje się cały genotyp populacji na raz. Każda populacja jest reprezentowana jako dystrybucja prawdopodobieństwa. Algorytm PBIL należy do tej grupy i reprezentuje populację jako wektor prawdopodobieństw (p\textsubscript{i}):
-\[
-        \boldsymbol{p}^t = [p_1^t, p_2^t, \dots, p_n^t]
-\]
-Ten wektor będzie optymalizowany według \uline{\hyperref[sec:orgfed3d26]{funkcji celu}}.
-\subsection{Funkcja \texttt{update}}
+W klasycznych algorytmach ewolucyjnych rozwiązaniem zadania jest konkretny osobnik, a w każdej iteracji osobniki są mutowane indywidualnie. Natomiast w przypadku algorytmów EDA optymalizuje się cały genotyp populacji na raz. Każda populacja jest reprezentowana jako dystrybucja prawdopodobieństwa. Algorytm PBIL reprezentuje populację jako wektor prawdopodobieństw ($p^t$):
+$$
+p^t = [p^t_1,p^t_2,\dots,p^t_n]
+$$
+Wektor ten będzie optymalizowany według \uline{\hyperref[sec:orgfed3d26]{funkcji celu}}. Jest on inicjowany wartościami $0.5$, dzięki czemu początkowy rozkład jest równomierny i poszukiwanie rozwiązania nie jest obciążone.
+
+\subsubsection{Funkcja \texttt{update}}
 \label{sec:orga4c09fd}
-Odpowiedzialna za aktualizację wektora prawdopodobieństw bazując na ilości jedynek w \textbf{x}, które znajdują się w N najlepszych rozwiązań. Wzór funkcji przedstawiono poniżej:
-\[
-        \boldsymbol{p}^{t+1}=(1-a) \cdot \boldsymbol{p}^t + a \cdot \frac{1}{N} \sum_{x \in O^t}x
-\]
+Funkcja ta jest odpowiedzialna za aktualizację wektora prawdopodobieństw na podstawie częstotliwości występowania jedynek dla każdego genu wśród osobników ze zbioru $O^t$. Wzór funkcji przedstawiono poniżej:
+$$
+p^{t+1} = (1-a) \cdot p^t + a \cdot \frac{1}{N} \sum_{x \in O^t} x
+$$
 gdzie:
 \begin{itemize}
-\item a - learning rate
-\item \textbf{x} - binarny wektor opisany w \hyperref[sec:org7c490b7]{\uline{reprezentacji rozwiązania}}
+\item $a$ - learning rate
+\item \textbf{x} - pojedynczy osobnik, binarny wektor opisany w \hyperref[sec:org7c490b7]{\uline{reprezentacji rozwiązania}}
 \end{itemize}
-\section{A*}
+
+\subsubsection{Hiperparametry}
+Zadanie wymaga ustalenia wartości następujących parametrów:
+\begin{itemize}
+\item $M$ - rozmiar generowanej populacji
+\item $N$ - liczba najlepszych osobników wybieranych z wygenerowanej populacji
+\item $a$ - learning rate algorytmu
+\end{itemize}
+
+\subsection{Algorytm A*}
 \label{sec:orgd1b064a}
-A* jest przykładem algorytmu wyczerpującego przeszukiwania przestrzeni. Jest to algorytm zupełny i optymalny, tym sensie, że jeżeli optymalne rozwiązanie istnieje, to zostanie znalezione. Jest to typowe narzędzie do rozwiązywania problemów drzewiastych, takich jak problem plecakowy. Uznaliśmy że cecha optymalności tego algorytmu pozwoli na ciekawą analizę wyników w porównaniu do alg. \hyperref[sec:org5c31017]{\uline{PBIL}}.
-\subsection{Reprezentacja rozwiązania w A*}
+Algorytm A* jest przykładem algorytmu wyczerpującego przeszukiwania przestrzeni. Jest to algorytm zupełny i optymalny, czyli gwarantuje znalezienie optymalnego rozwiązania, jeżeli tylko takowe istnieje. Jest on powszechnie wykorzystywany do rozwiązywania problemów reprezentowanych przez strukturę drzewiastą. Jego gwarancja znalezienia optymalnego rozwiązania czyni go bardzo ciekawym w kontekście porównania wyników z algorytmem \hyperref[sec:org5c31017]{\uline{PBIL}}.
+
+\subsubsection{Reprezentacja rozwiązania w A*}
 \label{sec:org4ecd5a9}
-Nieco różni się od \hyperref[sec:org7c490b7]{pierwszego podejścia} tym, że wektor musi zostać rozszerzony o znak ?, który oznacza \textbf{brak decyzji}. Algorytm działa na zasadzie tworzenia "ścieżki", więc tylko węzeł końcowy będzie reprezentował kompletne rozwiązanie, tzn. informacje o wpakowaniu każdego przedmiotu.
+Algorytm A* wymaga reprezentacji przestrzeni rozwiązań w strukturze drzewiastej, więc reprezentację z \hyperref[sec:org7c490b7]{\uline{pierwszego podejścia}} należy rozszerzyć o dodatkową wartość $?$, która oznacza, że \textbf{nie podjęto jeszcze decyzji o tym przedmiocie}. Na każdym następnym poziomie drzewa znajdujący się najbardziej na lewo $?$ zostaje zastąpiony wartością $0$ (przedmiot nie został spakowany) lub $1$ (przedmiot spakowano). Węzły terminalne to takie, które nie spełniają założeń zadania niezależnie od tego, jakie decyzje zostaną jeszcze podjęte (przekroczenie wagi), lub takie, dla których zostały podjęte wszystkie decyzje.\\
+Przykładowe reprezentacje wyglądają następująco:
 \begin{verbatim}
-        ????????        punkt startowy algorytmu
-        01??????        wpakowanie 2; reszta nieznana - poziom 2 drzewa
-        01101???        wpakowanie 2,3,5; reszta nieznana
-        01101110        wpakowanie 2,3,5,6,7; węzeł końcowy
+        ????????        punkt startowy algorytmu, nie podjęto żadnej decyzji
+        01??????        spakowanie 2; reszta nieznana - poziom 2 drzewa
+        01101???        spakowanie 2,3,5; reszta nieznana
+        01101110        spakowanie 2,3,5,6,7; węzeł końcowy
 \end{verbatim}
-\subsection{Funkcja zysku i heurystyczna}
+
+\subsubsection{Funkcja celu}
 \label{sec:orgd7b7848}
-W przypadku problemu plecakowego A* działa na zasadzie \textbf{maksymalizacji} funkcji f, która jest definiowana przez:
-\[
-        f(x) = g(x) + h(x)
-\]
+W przypadku algorytmu A*, \textbf{maksymalizowana} funkcji celu ma postać:
+$$
+f(x) = g(x) + h(x)
+$$
 gdzie:
 \begin{itemize}
-\item g(x) - funkcja zysku
-\item h(x) - funkcja heurystyczna
+\item $g(x)$ - funkcja zysku
+\item $h(x)$ - funkcja heurystyczna
 \end{itemize}
+
 \subsubsection{Funkcja zysku}
 \label{sec:orgf97f734}
-Najbardziej sensownym podejściem będzie zsumowanie wartości przedmiotów \textbf{w plecaku}
-\[
-        g(x) = \sum_{i:x_i=1}^n{v_i}
-\]
-Jeżeli wpakujemy dodatkowy przedmiot: rozwiązanie zwiększy swoją sumaryczną wartość się o wartość wsadzonego przedmiotu.
+
+Funkcja zysku ma postać:
+$$
+g(x) = \sum_{i = 1}^n x_i \cdot p_i
+$$
+Jest ona trywialna - stanowi sumę wartości spakowanych przedmiotów.
 \subsubsection{Funkcja heurystyczna}
 \label{sec:org8963b0e}
 Musi być:
 \begin{itemize}
-\item dopuszczalna: g(x) + h(x) \(\ge\) g(x\textsubscript{t})
-\item monotoniczna: g(x\textsubscript{j}) + h(x\textsubscript{j}) \(\le\) g(x\textsubscript{i}) + h(x\textsubscript{i})
+\item dopuszczalna: $g(x) + h(x) \ge g(x_t)$ - musi cechować się tzw. "nadmiernym optymizmem", czyli przeszacowywać możliwy zysk.
+\item monotoniczna: $g(x_j)+h(x_j) \le g(x_i) + h(x_i)$ - błąd oszacowania musi maleć wraz ze zbliżaniem się do rozwiązania.
 \end{itemize}
-Dla problemu plecakowego można użyć funkcji heurystycznej postaci:
-\[
-        h(x) = \sum_{i:x_i=?}^n{y_i \cdot p_i}
-\]
-gdzie
+Zaproponowana przez nas funkcja heurystyczna to:
+$$
+h(x) = \sum_{i:x_i=?}^n y_i \cdot p_i
+$$
+gdzie:
 \begin{itemize}
-\item i:x\textsubscript{i}=? - indeksy w x dla przedmiotów o statusie ?
-\item y\textsubscript{i} to zmienna ułamkowa, definiowana przez równość
+\item $i: x_i = ?$ - indeksy w $x$ dla przedmiotów, dla których nie podjęto jeszcze decyzji
+\item $y_i \in [0;1]$ - zmienna ułamkowa (\textbf{w funkcji heurystycznej dopuszczamy pakowanie części przedmiotów}) wyznaczana wg wzoru:
 \end{itemize}
-\[
-        \sum_{i:x_i=?}^n{y_i \cdot w_i} = W - \sum_{i=1}^n{x_i \cdot w_i}
-\]
+$$
+\sum_{i:x_i=?}^n y_i \cdot w_i = W - \sum_{i=1}^n x_i \cdot w_i
+$$
+Maksymalizacja funkcji celu sprawia, że w funkcji heurystycznej będą premiowane przedmioty o najwyższych współczynnikach $\frac{p_i}{w_i}$. Funkcja ta jest dopuszczalna i monotoniczna, więc nadaje się na funkcję heurystyczną do naszego zadania.
+
 \section{Plan eksperymentów}
 \label{sec:org78ee836}
-Aby przeprowadzić dokładną analizę statystyczną porównującą efektywność obu metod, wymagane jest odpowiednie środowisko testowe. Do tego zadania wybraliśmy 3 różne problemy plecakowe, które różnią się od siebie poziomem skorelowania danych:
+W celu przeprowadzenia dokładnej analizy statystycznej porównującej efektywność obu metod, wymagane jest odpowiednie środowisko testowe. Do tego zadania wybraliśmy 3 różne problemy plecakowe, które różnią się od siebie poziomem skorelowania danych:
 \begin{enumerate}
 \item Dane nieskorelowane
 \item Dane średnio skorelowane
 \item Dane mocno skorelowane
 \end{enumerate}
-Testy przeprowadzimy dla różnej maksymalnej ilości przedmiotów, wagi przedmiotu oraz pojemnośic plecaka. Początkowo przyjmujemy n = 100, v = 10, W = 100.
+Testy przeprowadzimy dla różnej maksymalnej ilości przedmiotów, wagi przedmiotu oraz pojemności plecaka. Początkowo przyjmujemy $n = 100,\ v = 10,\ W = 100$. Takie podejście pozwoli na sprawdzenie efektywności metody \uline{\hyperref[sec:org5c31017]{PBIL}} w porównaniu do \hyperref[sec:orgd1b064a]{\uline{algorytmu A*}}, który zawsze znajdzie optymalne rozwiązanie. 
 
-Takie podejście pozwoli na sprawdzenie efektywności metody \uline{\hyperref[sec:org5c31017]{PBIL}} w porównaniu do metody \hyperref[sec:orgd1b064a]{\uline{A*}}, które zawsze znajdzie optymalne rozwiązanie. Każdy eksperyment będzie uruchomiony wielokrotnie, a wyniki uśrednione z dokładnością do drugiego miejsca po przecinku.
+\subsection{Badane czynniki}
+W naszej analizie skupimy się na następujących czynnikach:
+\begin{itemize}
+\item jakość wyznaczonego rozwiązania
+\item czas dojścia do optymalnego rozwiązania
+\item wpływ parametrów na działanie algorytmu
+\end{itemize}
 
-Parametr, który nas interesuje podczas testowania efektywności najbardziej to \textbf{maksymalna nagrana wartość funkcji celu} oraz \textbf{ilość obliczeń funkcji celu}. Do analizy wizualnej posłużą nam wykresy, które mapują wartości funkcji celu na ilość iteracji algorytmu oraz tabelki ze średnimi wartościami i standardowym odchyleniem. Informacje, które będziemy zbierać:
-\begin{verbatim}
-{
-        maksymalna_wartość_funkcji_celu,        # najlepszego osobnika
-        końcowa_wartość_funkcji_celu,           #
-        średnia_wartość_funkcji_celu,           # całej populacji
-        odchylenie_standardowe_funkcji_celu     #
-}
-\end{verbatim}
+Wszelkie eksperymenty zostaną wykonane wielokrotnie w celu uwiarygodnienia wyników i eliminacji wpływu czynników zewnętrznych (np. dodatkowe obciążenie w tle podczas mierzenia czasu wyznaczania rozwiązań). Dodatkowo, skorzystamy ze standardowych metryk analizy statystycznej, tj. wartości maksymalnej, średniej i odchylenia standardowego dla każdego czynnika. Wszelkie zebrane dane zostaną przedstawione na odpowiednich wykresach i szczegółowo przeanalizowane.
+
 \end{document}
