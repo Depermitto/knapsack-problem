@@ -13,10 +13,12 @@
 \usepackage{capt-of}
 \usepackage{hyperref}
 \usepackage[a4paper, margin=1.2in]{geometry}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \hypersetup{colorlinks=true,linkcolor=black}
 \author{Piotr Jabłoński (325163) i Paweł Wysocki (325248)}
 \date{Listopad 2024}
-\title{Dokumentacja wstepna projektu z POP}
+\title{POP - dokumentacja wstępna}
 \hypersetup{
  pdfauthor={Piotr Jabłoński (325163) i Paweł Wysocki (325248)},
  pdftitle={Dokumentacja wstepna projektu z POP},
@@ -32,30 +34,36 @@
 \pagebreak
 \section{Temat projektu}
 \label{sec:org66d662c}
-Zadaniem jest rozwiązanie problemu plecakowego dla danych skorelowanych i nieskorelowanych używając algorytmu PBIL oraz porównanie z inną metodą. Należy poddać się dokładnie statycznycznej analizie wyników. Jako alternatywną metodę rozwiązania wybraliśmy algorytm A*.
+Celem naszego projektu jest rozwiązanie problemu plecakowego dla danych skorelowanych i nieskorelowanych używając algorytmu PBIL oraz porównanie jego działania z inną metodą. Należy dokonać dokładnej analizy statystycznej uzyskanych wyników. \\\\
+Jako alternatywną metodę rozwiązania wybraliśmy \textbf{algorytm A*}.
 \section{Opis problemu}
 \label{sec:org4d991fb}
-Problem plecakowy jest klasycznym problemem maksymalizacji celu. Należy wybrać n przedmiotów z plecaka, tak aby ich sumaryczna waga (\(\sum_i^n{w_i}\)) była mniejsza niż pojemność plecaka W. Każdy z przedmiotów ma dwa parametry - waga (w) oraz wartość (p).
-\[
-        max \sum_{i=1}^n{x_i \cdot v_i}
-\]
-\[
-        \sum_{i=1}^n{x_i \cdot w_i} \leq W
-\]
-gdzie x\textsubscript{i} \(\in\) \{0, 1\} - decyzja o wsadzeniu przedmiotu do pleceka
+Problem plecakowy jest jednym z najpopularniejszych problemów optymalizacyjnych. 
+Dysponujemy w nim listą $n$ przedmiotów, gdzie dla każdego z nich zdefiniowane są:\\
+- wartość $p_i$,\\
+- waga $w_i$.\\
+Jest to problem maksymalizacyjny - należy wybrać z puli $k$ przedmiotów, dla których:
+\begin{itemize}
+    \item suma wartości $\sum_{i=1}^n y_i p_i$ jest największa,
+    \item suma ich wag $\sum_{i=1}^n y_i w_i$ nie przekracza maksymalnej pojemności plecaka $W$,
+    \item gdzie $y_i \in \{0,1\}$ - decyzja o spakowaniu przedmiotu.
+\end{itemize}
+
 \subsection{Funkcja celu}
 \label{sec:orgfed3d26}
-\[
-        f(x) = \sum_{i=1}^n{x_i \cdot v_i},
-\]
-Wszystkie rozwiązania produkujące sumaryczną wagę większą od W są odrzucane.
+\textbf{Maksymalizowaną} funkcją celu w problemie plecakowym jest wspomniana wcześniej suma wartości:
+$$
+f(x) = \sum_{i=1}^n y_i \cdot p_i
+$$
+Rozwiązania niespełniające wymagania wagowego \textbf{zostaną obciążone funkcją kary w postaci sumy wartości wszystkich dostępnych przedmiotów}.
 \subsection{Reprezentacja rozwiązania}
 \label{sec:org7c490b7}
-W klasycznym zadaniu problemu plecakowego reprezentacja zadania jest wektorem bitów, gdzie pojedynczy bit oznaczenia podjęcie decyzji o wsadzeniu przedmiotu do plecaka, może wyglądać następująco
+W klasycznym problemie plecakowym reprezentacją zadania jest wektorem bitów, gdzie $i$-ty bit informuje o decyzji, czy $i$-ty przedmiot został spakowany (efektywnie jest to reprezentacja wspomnianej we wcześniejszych wzorach zmiennej $y_i$). \\
+Przykładowe reprezentacje mogą wyglądać następująco:
 \begin{verbatim}
-        01101011        wpakowanie 2,3,5,7 i 8 przedmiotu
-        11111111        wpakowanie wszystkich przedmiotów
-        00000000        nie wpakowanie żadnego przedmiotu
+        01101011        spakowanie przedmiotów nr 2,3,5,7 i 8
+        11111111        spakowanie wszystkich przedmiotów
+        00000000        niespakowanie żadnego przedmiotu
 \end{verbatim}
 
 \pagebreak
@@ -71,18 +79,25 @@ Algorytm działa na zasadzie iteracyjnej poprawie populacji początkowej poprzez
 \item mutacja populacji P\textsuperscript{t+1}
 \end{enumerate}
 Kod w pseudo-pythonie przedstawiono poniżej:
-\begin{verbatim}
-M, N # const
-
-p = Population()
-t = 0
-while !stop:
-    Pt = sample(p, M)
-    Ot = select(Pt, N)
-    p = update(Ot, p, a)
-    p = mutate(p)
-    t += 1
-\end{verbatim}
+\begin{algorithm}[h]
+\caption{Algorytm PBIL}
+\begin{algorithmic}
+\State $initialize(p^0)$
+\Comment{Inicjalizacja wektora prawdopodobieństw}
+\State t = 0
+\While {$!stop$}
+\State $P^t = sample(p^t,M)$
+\Comment{Generowanie $M$ osobników zgodnie z rozkładem $p^t$}
+\State $O^t = select(P^t,N)$
+\Comment{Selekcja $N$ najlepszych osobników z wygenerowanej populacji}
+\State $p^{t+1} = update(O^t,p^t,a)$
+\Comment{Aktualizacja wektora z użyciem wybranych osobników}
+\State $p^{t+1} = mutate(p^{t+1})$
+\Comment{Mutacja wektora prawdopodobieństw}
+\State $t += 1$
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
 
 Warunek końca to może być ilość iteracji lub satysfakcjonująco dobre rozwiązanie. Algorytm należy zatrzymać gdy wektor prawdopodobieństwa się ustabilizuje tzn. gdy z iteracji do iteracji występuje bardzo mały stopień poprawy.
 \subsection{Reprezentacja zadania}
