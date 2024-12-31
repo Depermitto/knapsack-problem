@@ -1,3 +1,6 @@
+from functools import total_ordering
+
+@total_ordering
 class Item:
     """
     Class to represent an item in the knapsack problem.
@@ -21,3 +24,13 @@ class Item:
 
     def __repr__(self):
         return f"Item(value={self.value}, weight={self.weight}, ratio={self.ratio}, picked={self.picked})"
+
+    def __eq__(self, other):
+        if not isinstance(other, Item):
+            return NotImplemented
+        return self.ratio == other.ratio
+    
+    def __lt__(self, other):
+        if not isinstance(other, Item):
+            return NotImplemented
+        return self.ratio < other.ratio
