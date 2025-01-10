@@ -53,7 +53,7 @@ class State:
 
 def a_star(
     total_capacity: int | float, items: list[Item]
-) -> tuple[int | float, list[Item]]:
+) -> tuple[int | float, list[bool]]:
     """
     Solve the knapsack problem using A* search.
     # Args:
@@ -61,7 +61,7 @@ def a_star(
         items (`list[Item]`): List of the items that are available to be picked.
 
     # Returns:
-        `tuple[int | float, list[Item]]`: the total value of the items picked and the list of items picked.
+        `tuple[int | float, list[bool]]`: the total value of the items picked and the best solution representation vector.
     """
 
     def heuristic(items: list[Item], capacity: int | float, item_index: int):
@@ -143,4 +143,6 @@ def a_star(
         )
         heappush(queue, new_state)
 
-    return best_value, best_items
+    representation_vector = [True if item in best_items else False for item in items]
+
+    return best_value, representation_vector
