@@ -45,9 +45,9 @@ class State:
     def __lt__(self, other):
         if not isinstance(other, State):
             return NotImplemented
-        return (
+        return ( # reverse order for heapq to be more efficient
             self.current_value + self.heuristic_value
-            < other.current_value + other.heuristic_value
+            >= other.current_value + other.heuristic_value
         )
 
 
@@ -107,7 +107,7 @@ def a_star(
             if current_state.current_value > best_value:
                 best_value = current_state.current_value
                 best_items = current_state.picked_items
-            continue
+            break
 
         # retrieve the item under consideration
         item: Item = items[current_state.curr_item_index]
