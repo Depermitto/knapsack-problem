@@ -53,7 +53,7 @@ class State:
 
 def a_star(
     total_capacity: int | float, items: list[Item]
-) -> tuple[int | float, list[bool]]:
+) -> tuple[int | float, list[bool], list[tuple[int, int | float]]]:
     """
     Solve the knapsack problem using A* search.
     # Args:
@@ -66,7 +66,7 @@ def a_star(
 
     def heuristic(
         items: list[Item], capacity: int | float, item_index: int
-    ) -> tuple[int | float, list[bool], list[tuple[int, int]]]:
+    ) -> int | float:
         """
         Calculate the heuristic value for the given items, capacity, and item index.
         # Args:
@@ -77,9 +77,11 @@ def a_star(
         # Returns:
             `int | float`: the calculated heuristic value.
             `list[bool]`: the representation vector of the best solution.
-            `list[tuple[int, int]]`: the best values over the course of iterations.
+            `list[tuple[int, int | float]]`: the best values over the course of iterations.
         """
         remaining_capacity = capacity
+        if all(item.weight > remaining_capacity for item in items[item_index:]):
+            return 0
         value = 0
         for i in range(item_index, len(items)):
             if items[i].weight <= remaining_capacity:
@@ -101,7 +103,7 @@ def a_star(
     heappush(queue, initial_state)
     best_value = 0
     best_items = []
-    best_values = [(0, 0)]
+    best_values: list[tuple[int, int | float]] = [(0, 0)]
     iteration = 0
     while queue:
         current_state: State = heappop(queue)
@@ -127,6 +129,7 @@ def a_star(
                 (iteration - 1, best_value)
             )  # append the previous best value
             best_value = current_state.current_value
+            best_items = current_state.picked_items
             best_values.append((iteration, best_value))  # append the current best value
 
         # if the current state is not promising, end the run
