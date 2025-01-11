@@ -45,7 +45,7 @@ class State:
     def __lt__(self, other):
         if not isinstance(other, State):
             return NotImplemented
-        return ( # reverse order for heapq to be more efficient
+        return (  # reverse order for heapq to be more efficient
             self.current_value + self.heuristic_value
             >= other.current_value + other.heuristic_value
         )
@@ -64,7 +64,9 @@ def a_star(
         `tuple[int | float, list[bool]]`: the total value of the items picked and the best solution representation vector.
     """
 
-    def heuristic(items: list[Item], capacity: int | float, item_index: int):
+    def heuristic(
+        items: list[Item], capacity: int | float, item_index: int
+    ) -> tuple[int | float, list[bool], list[tuple[int, int]]]:
         """
         Calculate the heuristic value for the given items, capacity, and item index.
         # Args:
@@ -74,6 +76,8 @@ def a_star(
 
         # Returns:
             `int | float`: the calculated heuristic value.
+            `list[bool]`: the representation vector of the best solution.
+            `list[tuple[int, int]]`: the best values over the course of iterations.
         """
         remaining_capacity = capacity
         value = 0
@@ -95,22 +99,40 @@ def a_star(
         0, 0, total_capacity, heuristic(items, total_capacity, 0), 0, []
     )
     heappush(queue, initial_state)
-
     best_value = 0
     best_items = []
-
+    best_values = [(0, 0)]
+    iteration = 0
     while queue:
         current_state: State = heappop(queue)
-
+        # collect the best values for plotting
+        iteration += 1
         # if it's the last item, check if it's the best solution
         if current_state.curr_item_index == len(items):
             if current_state.current_value > best_value:
+                best_values.append(
+                    (iteration - 1, best_value)
+                )  # append the previous best value
                 best_value = current_state.current_value
                 best_items = current_state.picked_items
+            best_values.append((iteration, best_value))  # append the last iteration
             break
 
         # retrieve the item under consideration
         item: Item = items[current_state.curr_item_index]
+
+        # if the current state is better, update the best value
+        if current_state.current_value > best_value:
+            best_values.append(
+                (iteration - 1, best_value)
+            )  # append the previous best value
+            best_value = current_state.current_value
+            best_values.append((iteration, best_value))  # append the current best value
+
+        # if the current state is not promising, end the run
+        if current_state.current_value + current_state.heuristic_value < best_value:
+            best_values.append((iteration, best_value))  # append the last iteration
+            break
 
         # create a state where the item is picked (if it fits)
         if current_state.current_weight + item.weight <= total_capacity:
@@ -145,4 +167,4 @@ def a_star(
 
     representation_vector = [True if item in best_items else False for item in items]
 
-    return best_value, representation_vector
+    return best_value, representation_vector, best_values
