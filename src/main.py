@@ -1,12 +1,31 @@
 import knapsack
+import os
+import json
+from time import time
 
-FILENAMES = ['f1_l-d_kp_10_269.csv', 'f2_l-d_kp_20_878.csv', 'f3_l-d_kp_4_20.csv', 'f4_l-d_kp_4_11.csv', 'f5_l-d_kp_15_375.csv', 'f6_l-d_kp_10_60.csv', 'f7_l-d_kp_7_50.csv', 'f8_l-d_kp_23_10000.csv', 'f9_l-d_kp_5_80.csv', 'f10_l-d_kp_20_879.csv']
+FILEPATH = 'data/small/'
+RESULT_FILE = 'results/a_star/small.jsonl'
+
+def save_results(fname, optimal, time, best_values):
+    res = {
+        'filename': fname,
+        'optimal': optimal,
+        'time': time,
+        'best_values': best_values
+    }
+    with open(RESULT_FILE, 'a') as f:
+        json.dump(res, f)
+        f.write('\n')
 
 def main():
+    FILENAMES = os.listdir(FILEPATH)
     for fname in FILENAMES:
-        optimal, capacity, items = knapsack.read_data('data/small/' + fname)
-        value, taken_items = knapsack.a_star(capacity, items)
-        print(f"Expected value: {optimal}, Computed value: {value}")
+        optimal, capacity, items = knapsack.read_data(FILEPATH + fname)
+        start = time()
+        value, taken_items, best_values = knapsack.a_star(capacity, items)
+        end = time()
+        print(f"Expected value: {optimal}, Computed value: {value}, Iterations: {best_values[-1][0]}")
+        save_results(fname, optimal, end - start, best_values)
 
 if __name__ == '__main__':
     main()
