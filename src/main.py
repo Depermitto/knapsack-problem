@@ -2,9 +2,10 @@ import knapsack
 import os
 import json
 from time import time
+import matplotlib.pyplot as plt
 
 FILEPATH = 'data/small/'
-RESULT_FILE = 'results/a_star/small.jsonl'
+RESULT_FILE = 'results/a_star/strong_correlation.jsonl'
 
 def save_results(fname, optimal, time, best_values):
     res = {
@@ -28,4 +29,17 @@ def main():
         save_results(fname, optimal, end - start, best_values)
 
 if __name__ == '__main__':
-    main()
+    # main()
+    optimal, capacity, items = knapsack.read_data(FILEPATH + 'f1_l-d_kp_10_269.csv')
+    value, taken_items, best_values, probs = knapsack.pbil(capacity, items)
+    print(f"Expected value: {optimal}, Computed value: {value}")
+    x_values = range(len(best_values)+1)
+    for x, values in zip(x_values, best_values):
+        plt.scatter([x] * len(values), values)
+    plt.suptitle(f"PBIL: Expected value: {optimal}, Computed value: {value}")
+    plt.title(f"{probs}")
+    plt.xlabel("Generation")
+    plt.ylabel("Value")
+    plt.show()
+    # print(best_values)
+    pass
