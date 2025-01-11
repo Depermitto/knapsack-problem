@@ -1,5 +1,6 @@
 from functools import total_ordering
 
+
 @total_ordering
 class Item:
     """
@@ -26,7 +27,7 @@ class Item:
         if not isinstance(other, Item):
             return NotImplemented
         return self.ratio == other.ratio
-    
+
     def __lt__(self, other):
         if not isinstance(other, Item):
             return NotImplemented
