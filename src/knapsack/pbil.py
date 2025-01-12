@@ -1,6 +1,7 @@
 from .typing import Item
-import random
 from functools import total_ordering
+import numpy as np
+import random
 
 
 @total_ordering
@@ -46,6 +47,7 @@ def pbil(
     learning_rate: float = 0.1,
     mutation_rate: float = 0.05,
     mutation_shift: float = 0.05,
+    threshold: float = 1e-4,
 ) -> tuple[int | float, list[bool], list[list[int | float]], list[float]]:
     """
     Solve the knapsack problem using the Population-Based Incremental Learning (PBIL) algorithm.
@@ -68,15 +70,15 @@ def pbil(
         items, key=lambda x: x.ratio, reverse=True
     )  # sort items by value/weight ratio to match A* algorithm
     num_items = len(items)
-    probability_vector = [0.5] * num_items
+    p = np.full(num_items, 0.5)
+    p_prev = None
     best_value = 0
     best_specimen = None
     best_values: list[list[int | float]] = []
     for i in range(1, num_generations + 1):
         # generate population
         population = [
-            Specimen(items, probability_vector, total_capacity)
-            for _ in range(population_size)
+            Specimen(items, p, total_capacity) for _ in range(population_size)
         ]
         population = sorted(population, reverse=True)
         # save best specimen
@@ -97,15 +99,26 @@ def pbil(
 
         # update the probability vector
         for i in range(num_items):
-            probability_vector[i] = (1 - learning_rate) * probability_vector[
-                i
-            ] + learning_rate * (occurrence_counts[i] / num_best)
+            p[i] = (1 - learning_rate) * p[i] + learning_rate * (
+                occurrence_counts[i] / num_best
+            )
 
-        # aply mutation
+        # apply mutation
         for i in range(num_items):
             if random.random() < mutation_rate:
                 mutation = random.uniform(-mutation_shift, mutation_shift)
-                probability_vector[i] = min(max(probability_vector[i] + mutation, 0), 1)
+                p[i] = min(max(p[i] + mutation, 0), 1)
 
-    representation_vector = [True if item in best_specimen.items else False for item in items]  # type: ignore
-    return best_value, representation_vector, best_values, probability_vector
+        if p_prev is not None:
+            l1_change = np.sum(np.abs(p - p_prev))
+            max_change = np.max(np.abs(p - p_prev))
+
+            if l1_change < threshold and max_change < threshold:
+                break
+        p_prev = np.copy(p)
+
+    assert best_specimen is not None and p is not None
+    representation_vector = [
+        True if item in best_specimen.items else False for item in items
+    ]
+    return best_value, representation_vector, best_values, p.tolist()

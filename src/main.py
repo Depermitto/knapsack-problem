@@ -3,6 +3,7 @@ import os
 import json
 from time import time
 import matplotlib.pyplot as plt
+import numpy as np
 
 FILEPATH = "data/small/"
 RESULT_FILE = "results/a_star/strong_correlation.jsonl"
@@ -34,17 +35,16 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
     optimal, capacity, items = knapsack.read_data(FILEPATH + "f1_l-d_kp_10_269.csv")
-    value, taken_items, best_values, probs = knapsack.pbil(capacity, items)
+    value, taken_items, best_values, probs = knapsack.pbil(
+        capacity, items, threshold=0.1, num_generations=1000
+    )
     print(f"Expected value: {optimal}, Computed value: {value}")
     x_values = range(len(best_values) + 1)
     for x, values in zip(x_values, best_values):
         plt.scatter([x] * len(values), values)
     plt.suptitle(f"PBIL: Expected value: {optimal}, Computed value: {value}")
-    plt.title(f"{probs}")
+    plt.title(f"{np.round(probs, 2)}")
     plt.xlabel("Generation")
     plt.ylabel("Value")
     plt.show()
-    # print(best_values)
-    pass
