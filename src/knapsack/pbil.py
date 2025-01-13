@@ -89,8 +89,10 @@ def pbil(
         selected = population[:num_best]
         # keep track of best values
         best_values.append([spec.value for spec in selected])
-        
-        occurrence_counts = [sum(col) for col in zip(*[spec.items for spec in selected])]
+
+        occurrence_counts = [
+            sum(col) for col in zip(*[spec.items for spec in selected])
+        ]
 
         # update the probability vector
         for i in range(num_items):
@@ -113,6 +115,9 @@ def pbil(
                 break
         p_prev = np.copy(p)
 
-    assert best_specimen is not None and p is not None
-    representation_vector = best_specimen.items
+    assert p is not None
+    if best_specimen is None:
+        representation_vector = [False] * len(items)
+    else:
+        representation_vector = best_specimen.items
     return best_value, representation_vector, best_values, p.tolist()
