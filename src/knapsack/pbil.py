@@ -9,7 +9,7 @@ class Specimen:
     """
     Class to represent a specimen in the PBIL algorithm.
     # Fields:
-    items (`list[bool]`) - the representation vector of items picked for the specimen. \\
+    items (`list[bool]`) - the representation vector of items picked for the specimen.
     value (`int | float`) - the total value of the items picked (0 if the weight is too much).
     """
 
@@ -19,10 +19,9 @@ class Specimen:
     def __init__(self, items, probabilities, capacity_limit) -> None:
         self.items = [random.random() < p for p in probabilities]
         picked_items = [item for item, is_picked in zip(items, self.items) if is_picked]
-        if sum(item.weight for item in picked_items) > capacity_limit:
-            self.value = 0
-        else:
-            self.value = sum(item.value for item in picked_items)
+        self.value = sum(item.weight for item in picked_items)
+        if self.value > capacity_limit: # penalty
+            self.value -= sum(item.value for item in items)
 
     def __repr__(self) -> str:
         return f"Specimen(value={self.value}, items={self.items})"
@@ -45,21 +44,21 @@ def pbil(
     num_generations: int = 100,
     num_best: int = 10,
     learning_rate: float = 0.1,
-    mutation_rate: float = 0.05,
-    mutation_shift: float = 0.05,
+    mutation_probability: float = 0.05,
+    mutation_std: float = 0.15,
     threshold: float = 1e-4,
 ) -> tuple[int | float, list[bool], list[list[int | float]], list[float]]:
     """
     Solve the knapsack problem using the Population-Based Incremental Learning (PBIL) algorithm.
     # Args:
-        total_capacity (`int | float`): the total capacity of the knapsack. \\
-        items (`list[Item]`): the list of items. \\
-        population_size (`int`): the size of the population. \\
-        num_generations (`int`): the number of generations. \\
-        num_best (`int`): the number of best specimens to keep. \\
-        learning_rate (`float`): the learning rate. \\
-        mutation_rate (`float`): the mutation rate. \\
-        mutation_shift (`float`): the mutation shift. \\
+        total_capacity (`int | float`): the total capacity of the knapsack.
+        items (`list[Item]`): the list of items.
+        population_size (`int`): the size of the population.
+        num_generations (`int`): the number of generations.
+        num_best (`int`): the number of best specimens to keep.
+        learning_rate (`float`): the learning rate.
+        mutation_probability (`float`): the chance of mutation for a single item probability.
+        mutation_std (`float`): the standard deviation for the gaussian mutation (exceeding 0.33 is not advised).
     # Returns:
         `int | float`: best value found.
         `list[bool]`: the list of booleans indicating whether the item at the corresponding index is picked.
@@ -102,8 +101,8 @@ def pbil(
 
         # apply mutation
         for i in range(num_items):
-            if random.random() < mutation_rate:
-                mutation = random.uniform(-mutation_shift, mutation_shift)
+            if random.random() < mutation_probability:
+                mutation = random.gauss(0, mutation_std)
                 p[i] = min(max(p[i] + mutation, 0), 1)
 
         # additional stop condition

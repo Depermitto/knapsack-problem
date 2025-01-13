@@ -13,7 +13,7 @@ class State:
     remaining_capacity (`int | float`) - the remaining capacity of the knapsack. \\
     curr_item_index (`int`) - the current index in the item list. \\
     heuristic_value (`int | float`) - the heuristic function value. \\
-    picked_items (`list[Item]`) - the list of picked items.
+    picked_items (`list[bool]`) - representation vector of picked items.
     """
 
     current_value: int | float
@@ -21,7 +21,7 @@ class State:
     remaining_capacity: int | float
     heuristic_value: int | float
     curr_item_index: int
-    picked_items: list[Item]
+    picked_items: list[bool]
 
     def __init__(self, value, weight, capacity, heuristic, index, picked_items):
         self.current_value = value
@@ -149,7 +149,7 @@ def a_star(
                     current_state.curr_item_index + 1,
                 ),
                 current_state.curr_item_index + 1,
-                current_state.picked_items + [item],
+                current_state.picked_items + [True],
             )
             heappush(queue, new_state)
 
@@ -164,10 +164,10 @@ def a_star(
                 current_state.curr_item_index + 1,
             ),
             current_state.curr_item_index + 1,
-            current_state.picked_items,
+            current_state.picked_items + [False],
         )
         heappush(queue, new_state)
 
-    representation_vector = [True if item in best_items else False for item in items]
+    representation_vector = best_items + [False] * (len(items) - len(best_items)) # all other items are not taken into account
 
     return best_value, representation_vector, best_values
