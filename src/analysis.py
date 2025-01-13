@@ -3,8 +3,10 @@ import numpy as np
 import time
 import knapsack
 
+from pathlib import Path
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
+from concurrent.futures import ProcessPoolExecutor
 
 
 @dataclass
@@ -37,7 +39,8 @@ def ecdf(data):
 
 
 def test_algorithms(config: Config):
-    all_results = []
+    all_pbil_results = []
+    all_a_star_results = []
     for filepath in config.data_filepaths:
         optimal_solution, capacity, items = knapsack.read_data(filepath)
         num_items = len(items)
@@ -65,7 +68,7 @@ def test_algorithms(config: Config):
                 {
                     "num_items": num_items,
                     "capacity": capacity,
-                    "generations_or_iterations": len(best_values),
+                    "generations": len(best_values),
                     "optimal_solution": optimal_solution,
                     "solution": solution,
                     "time": elapsed,
@@ -81,16 +84,17 @@ def test_algorithms(config: Config):
                 {
                     "num_items": num_items,
                     "capacity": capacity,
-                    "generations_or_iterations": len(best_values),
+                    "iterations": len(best_values),
                     "optimal_solution": optimal_solution,
                     "solution": solution,
                     "time": elapsed,
                 }
             )
-        a_star_results_df = pd.DataFrame(a_star_results)
         pbil_results_df = pd.DataFrame(pbil_results)
-        all_results.append(pbil_results_df)
-        all_results.append(a_star_results_df)
+        all_pbil_results.append(pbil_results_df)
+
+        a_star_results_df = pd.DataFrame(a_star_results)
+        all_a_star_results.append(a_star_results)
 
         plt.figure(figsize=(8, 5))
 
@@ -110,32 +114,43 @@ def test_algorithms(config: Config):
             format="png",
         )
 
-    final_results = pd.concat(all_results, ignore_index=True)
+    final_results = pd.concat(all_pbil_results, ignore_index=True)
     summary = (
-        final_results.groupby(["num_items", "capacity"])
+        final_results.groupby(["num_items", "capacity", "optimal_solution"])
         .agg(["max", "mean", "std"])
         .reset_index()
     )
-    summary.to_csv(config.save_path + "results.csv")
+    summary.to_csv(config.save_path + "pbil.csv")
+
+    final_results = pd.concat(all_a_star_results, ignore_index=True)
+    summary = (
+        final_results.groupby(["num_items", "capacity", "optimal_solution"])
+        .agg(["max", "mean", "std"])
+        .reset_index()
+    )
+    summary.to_csv(config.save_path + "astar.csv")
+
+
+def process_correlation(correlation):
+    config = Config(
+        data_filepaths=list(map(str, Path("data").glob(f"{correlation}/*.csv"))),
+        save_path=f"output/{correlation}/",
+        num_trials=100,
+        max_items=1000,
+    )
+    test_algorithms(config)
 
 
 def main():
-    from pathlib import Path
-
     correlations = [
-        # "uncorrelated",
+        "uncorrelated",
         "small",
-        # "medium_correlation",
-        # "strong_correlation",
+        "medium_correlation",
+        "strong_correlation",
     ]
-    for correlation in correlations:
-        config = Config(
-            data_filepaths=list(map(str, Path("data").glob(f"{correlation}/*.csv"))),
-            save_path=f"output/{correlation}/",
-            num_trials=100,
-            max_items=1000,
-        )
-        test_algorithms(config)
+
+    with ProcessPoolExecutor() as executor:
+        executor.map(process_correlation, correlations)
 
 
 if __name__ == "__main__":
