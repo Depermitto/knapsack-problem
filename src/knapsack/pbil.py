@@ -19,10 +19,9 @@ class Specimen:
     def __init__(self, items, probabilities, capacity_limit) -> None:
         self.items = [random.random() < p for p in probabilities]
         picked_items = [item for item, is_picked in zip(items, self.items) if is_picked]
-        if sum(item.weight for item in picked_items) > capacity_limit:
-            self.value = 0
-        else:
-            self.value = sum(item.value for item in picked_items)
+        self.value = sum(item.weight for item in picked_items)
+        if self.value > capacity_limit: # penalty
+            self.value -= sum(item.value for item in items)
 
     def __repr__(self) -> str:
         return f"Specimen(value={self.value}, items={self.items})"
