@@ -22,6 +22,7 @@ class Specimen:
         self.value = sum(item.value for item in picked_items)
         if sum(item.weight for item in picked_items) > capacity_limit:  # penalty
             self.value -= sum(item.value for item in items)
+            # self.value = 0
 
     def __repr__(self) -> str:
         return f"Specimen(value={self.value}, items={self.items})"
@@ -69,7 +70,7 @@ def pbil(
         items, key=lambda x: x.ratio, reverse=True
     )  # sort items by value/weight ratio to match A* algorithm
     num_items = len(items)
-    p = np.full(num_items, 0.5)
+    p = np.full(num_items, 1/np.sqrt(num_items))
     p_prev = None
     best_value = 0
     best_specimen = None
