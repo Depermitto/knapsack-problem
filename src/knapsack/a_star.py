@@ -168,6 +168,8 @@ def a_star(
         )
         heappush(queue, new_state)
 
-    representation_vector = best_items + [False] * (len(items) - len(best_items)) # all other items are not taken into account
+    representation_vector = best_items + [False] * (
+        len(items) - len(best_items)
+    )  # all other items are not taken into account
 
     return best_value, representation_vector, best_values
