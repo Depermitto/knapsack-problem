@@ -55,6 +55,6 @@ def generate_strong_correlation(sizes: list[int], max_weight):
 
 if __name__ == "__main__":
     SIZES = [5, 10, 15, 20, 25, 30]
-    # generate_uncorrelated(SIZES, 100)
+    generate_uncorrelated(SIZES, 100)
     generate_medium_correlation(SIZES, 100)
-    # generate_strong_correlation(SIZES, 100)
+    generate_strong_correlation(SIZES, 100)
