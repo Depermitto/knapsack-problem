@@ -19,8 +19,8 @@ class Specimen:
     def __init__(self, items, probabilities, capacity_limit) -> None:
         self.items = [random.random() < p for p in probabilities]
         picked_items = [item for item, is_picked in zip(items, self.items) if is_picked]
-        self.value = sum(item.weight for item in picked_items)
-        if self.value > capacity_limit: # penalty
+        self.value = sum(item.value for item in picked_items)
+        if sum(item.weight for item in picked_items) > capacity_limit:  # penalty
             self.value -= sum(item.value for item in items)
 
     def __repr__(self) -> str:
@@ -44,8 +44,8 @@ def pbil(
     num_generations: int = 100,
     num_best: int = 10,
     learning_rate: float = 0.1,
-    mutation_probability: float = 0.05,
-    mutation_std: float = 0.15,
+    mutation_probability: float = 0.1,
+    mutation_std: float = 0.1,
     threshold: float = 1e-4,
 ) -> tuple[int | float, list[bool], list[list[int | float]], list[float]]:
     """
