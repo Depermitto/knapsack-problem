@@ -94,7 +94,7 @@ def test_algorithms(config: Config):
         all_pbil_results.append(pbil_results_df)
 
         a_star_results_df = pd.DataFrame(a_star_results)
-        all_a_star_results.append(a_star_results)
+        all_a_star_results.append(a_star_results_df)
 
         plt.figure(figsize=(8, 5))
 
@@ -128,7 +128,7 @@ def test_algorithms(config: Config):
         .agg(["max", "mean", "std"])
         .reset_index()
     )
-    summary.to_csv(config.save_path + "astar.csv")
+    summary.to_csv(config.save_path + "a_star.csv")
 
 
 def process_correlation(correlation):
