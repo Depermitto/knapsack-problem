@@ -22,13 +22,7 @@ def generate_uncorrelated(sizes: list[int], max_weight):
 def generate_medium_correlation(sizes: list[int], max_weight):
     sizes = sorted(sizes)
     weights = [random.randint(1, max_weight) for _ in range(sizes[-1])]
-    values = [
-        int(
-            weight
-            * (0.4 + random.uniform(-0.4 * max_weight, 0.4 * max_weight) / max_weight)
-        )
-        for weight in weights
-    ]
+    values = [int(random.gauss(weight, 0.2) * max_weight) for weight in weights]
     for size in sizes:
         mean: int = int(np.mean(values[:size]))
         total_weight = random.randint(mean, int(mean * size / 2))
@@ -60,8 +54,7 @@ def generate_strong_correlation(sizes: list[int], max_weight):
 
 
 if __name__ == "__main__":
-    pass  # example usage below
-    # SIZES = [5, 10, 15, 20, 25, 30]
+    SIZES = [5, 10, 15, 20, 25, 30]
     # generate_uncorrelated(SIZES, 100)
-    # generate_medium_correlation(SIZES, 100)
+    generate_medium_correlation(SIZES, 100)
     # generate_strong_correlation(SIZES, 100)
