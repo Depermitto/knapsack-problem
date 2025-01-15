@@ -9,6 +9,17 @@ import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor
 
 
+def __numfmt(x):
+    if x == 0:
+        return "0"
+    elif int(x) == x:
+        return str(int(x))
+    elif abs(x) < 1e-3:
+        return f"{x:.2e}"
+    else:
+        return f"{x:.2f}"
+
+
 @dataclass
 class Config:
     data_filepaths: list[str]
@@ -120,7 +131,7 @@ def test_algorithms(config: Config):
         .agg(["max", "mean", "std"])
         .reset_index()
     )
-    summary.to_csv(config.save_path + "pbil.csv")
+    summary.to_csv(config.save_path + "pbil.csv", float_format=__numfmt, index=False)
 
     final_results = pd.concat(all_a_star_results, ignore_index=True)
     summary = (
@@ -128,7 +139,7 @@ def test_algorithms(config: Config):
         .agg(["max", "mean", "std"])
         .reset_index()
     )
-    summary.to_csv(config.save_path + "a_star.csv")
+    summary.to_csv(config.save_path + "a_star.csv", float_format=__numfmt, index=False)
 
 
 def process_correlation(correlation):
