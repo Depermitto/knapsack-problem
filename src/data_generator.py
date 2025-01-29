@@ -32,7 +32,7 @@ def generate_dataset():
     Generate and save knapsack datasets for different sizes and correlation types.
     """
     CORR_TYPES = ["uncorrelated", "medium_correlation", "strong_correlation"]
-    ITEM_SIZES = [5, 10, 15, 20, 25, 30]
+    ITEM_SIZES = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100]
     BASE_DIR = "data"
     os.makedirs(BASE_DIR, exist_ok=True)
 
