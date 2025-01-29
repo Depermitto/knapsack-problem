@@ -60,6 +60,7 @@ def test_algorithms(config: Config):
         print(filepath, num_items, config.max_items)
 
         pbil_results = []
+        pbil_ecdf_results = []
         a_star_results = []
         for _ in range(config.num_trials):
             start_time = time.time()
@@ -85,6 +86,7 @@ def test_algorithms(config: Config):
                     "time": elapsed,
                 }
             )
+            pbil_ecdf_results.append(ecdf([np.max(topN) for topN in best_values]))
 
             start_time = time.time()
             solution, _, best_values = knapsack.a_star(
@@ -109,11 +111,11 @@ def test_algorithms(config: Config):
 
         plt.figure(figsize=(8, 5))
 
-        x, y = ecdf(pbil_results_df["solution"])
-        plt.step(x, y, where="post", color="b", label="PBIL")
-
-        x, y = ecdf(a_star_results_df["solution"])
-        plt.step(x, y, where="post", color="r", label="A*")
+        # x_vals = np.array(r[0] for r in pbil_ecdf_results)
+        # y_vals = np.array(r[1] for r in pbil_ecdf_results)
+        # x_mean = np.mean(x_vals)
+        # y_mean = np.mean(y_vals)
+        # plt.step(x_mean, y_mean, where="post", color="b", label="PBIL")
 
         plt.xlabel("Wartość")
         plt.ylabel("Odsetek wartości mniejszych")
@@ -146,7 +148,7 @@ def process_correlation(correlation):
     config = Config(
         data_filepaths=list(map(str, Path("data").glob(f"{correlation}/*.csv"))),
         save_path=f"output/{correlation}/",
-        num_trials=100,
+        num_trials=10,
         max_items=1000,
     )
     test_algorithms(config)
