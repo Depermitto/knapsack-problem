@@ -113,12 +113,9 @@ def pbil(
                 p[i] = min(max(p[i] + mutation, 0), 1)
 
         # additional stop condition
-        if p_prev is not None:
-            l1_change = np.sum(np.abs(p - p_prev))
-            max_change = np.max(np.abs(p - p_prev))
+        if p_prev is not None and np.linalg.norm(p - p_prev) < threshold:
             # if the change is too small, stop
-            if l1_change < threshold and max_change < threshold:
-                break
+            break
         p_prev = np.copy(p)
 
     assert p is not None
