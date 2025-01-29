@@ -10,7 +10,7 @@ Sklonować repozytorium:
 
 ```shell
 git clone https://github.com/Depermitto/knapsack-problem
-cd knapsack-problem
+cd decision-tree
 ```
 
 ## Uruchomienie
@@ -26,13 +26,13 @@ Następnie zależnie od platformy trzeba doinstalować wszystkie zależności i 
 ### Linux
 
 ```shell
-.venv/bin/pip install -r requirements.txt
-.venv/bin/python main.py
+.venv/bin/pip install -r src/requirements.txt
+.venv/bin/python src/main.py
 ```
 
 ### Windows
 
 ```shell
-.venv/Scripts/pip install -r requirements.txt
-.venv/Scripts/python main.py
+.venv/Scripts/pip install -r src/requirements.txt
+.venv/Scripts/python src/main.py
 ```
