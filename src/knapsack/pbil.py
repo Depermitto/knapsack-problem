@@ -70,7 +70,7 @@ def pbil(
         items, key=lambda x: x.ratio, reverse=True
     )  # sort items by value/weight ratio to match A* algorithm
     num_items = len(items)
-    p = np.full(num_items, 1 / np.sqrt(num_items))
+    p = np.full(num_items, np.log10(num_items) / num_items)
     p_prev = None
     best_value = 0
     best_specimen = None
