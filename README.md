@@ -10,7 +10,7 @@ Sklonować repozytorium:
 
 ```shell
 git clone https://github.com/Depermitto/knapsack-problem
-cd decision-tree
+cd knapsack-problem
 ```
 
 ## Uruchomienie
