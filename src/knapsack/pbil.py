@@ -43,7 +43,7 @@ def pbil(
     total_capacity: int | float,
     items: list[Item],
     population_size: int = 100,
-    num_generations: int = 100,
+    num_generations: int = 1000,
     num_best: int = 10,
     learning_rate: float = 0.1,
     mutation_probability: float = 0.1,
@@ -62,6 +62,8 @@ def pbil(
         learning_rate (`float`): the learning rate.
         mutation_probability (`float`): the chance of mutation for a single item probability.
         mutation_std (`float`): the standard deviation for the gaussian mutation (exceeding 0.33 is not advised).
+        threshold (`float`): the threshold for the change in the probability vector to stop the algorithm.
+        show_progress (`bool`): whether to display the progress bar.
     # Returns:
         `int | float`: best value found.
         `list[bool]`: the list of booleans indicating whether the item at the corresponding index is picked.
