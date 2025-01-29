@@ -1,60 +1,71 @@
+import os
 import random
+from typing import List, Tuple, Literal
 import pandas as pd
-import numpy as np
+
 from knapsack import a_star, Item
 
 
-def generate_uncorrelated(sizes: list[int], max_weight):
-    sizes = sorted(sizes)
-    weights = [random.randint(1, max_weight) for _ in range(sizes[-1])]
-    values = [random.randint(1, max_weight) for _ in range(sizes[-1])]
-    for size in sizes:
-        mean: int = int(np.mean(values[:size]))
-        total_weight = random.randint(mean, int(mean * size / 2))
-        items = [Item(values[i], weights[i]) for i in range(size)]
-        best_value, _, _ = a_star(total_weight, items)
-        prob_weights = [total_weight] + [item.weight for item in items]
-        prob_values = [best_value] + [item.value for item in items]
-        df = pd.DataFrame({"value": prob_values, "weight": prob_weights})
-        df.to_csv(f"data/uncorrelated/knapPI_{size}_{total_weight}.csv", index=False)
+def generate_items(
+    num_items: int,
+    correlation: Literal["uncorrelated", "medium_correlation", "strong_correlation"],
+    min_weight: int = 5,
+    max_weight: int = 100,
+    min_value: int = 10,
+    max_value: int = 500,
+) -> List[Tuple[int, int]]:
+    """
+    Generate a list of (value, weight) pairs based on correlation type.
+    """
+    weights = [random.randint(min_weight, max_weight) for _ in range(num_items)]
+    if correlation == "uncorrelated":
+        values = [random.randint(min_value, max_value) for _ in range(num_items)]
+    elif correlation == "medium_correlation":
+        values = [int(w * 0.5 + random.uniform(-0.5, 0.5) * w) + 1 for w in weights]
+    elif correlation == "strong_correlation":
+        values = [int(w * (random.uniform(0.9, 1.1))) for w in weights]
+    return list(zip(values, weights))
 
 
-def generate_medium_correlation(sizes: list[int], max_weight):
-    sizes = sorted(sizes)
-    weights = [random.randint(1, max_weight) for _ in range(sizes[-1])]
-    values = [int(random.gauss(weight, 0.2) * max_weight) for weight in weights]
-    for size in sizes:
-        mean: int = int(np.mean(values[:size]))
-        total_weight = random.randint(mean, int(mean * size / 2))
-        items = [Item(values[i], weights[i]) for i in range(size)]
-        best_value, _, _ = a_star(total_weight, items)
-        prob_weights = [total_weight] + [item.weight for item in items]
-        prob_values = [best_value] + [item.value for item in items]
-        df = pd.DataFrame({"value": prob_values, "weight": prob_weights})
-        df.to_csv(
-            f"data/medium_correlation/knapPI_{size}_{total_weight}.csv", index=False
-        )
+def generate_dataset():
+    """
+    Generate and save knapsack datasets for different sizes and correlation types.
+    """
+    CORR_TYPES = ["uncorrelated", "medium_correlation", "strong_correlation"]
+    ITEM_SIZES = [5, 10, 15, 20, 25, 30]
+    BASE_DIR = "data"
+    os.makedirs(BASE_DIR, exist_ok=True)
 
+    for correlation in CORR_TYPES:
+        correlation_dir = os.path.join(BASE_DIR, correlation)
+        os.makedirs(correlation_dir, exist_ok=True)
 
-def generate_strong_correlation(sizes: list[int], max_weight):
-    sizes = sorted(sizes)
-    weights = [random.randint(1, max_weight) for _ in range(sizes[-1])]
-    values = [int(weight + 0.2 * max_weight) for weight in weights]
-    for size in sizes:
-        mean: int = int(np.mean(values[:size]))
-        total_weight = random.randint(mean, int(mean * size / 2))
-        items = [Item(values[i], weights[i]) for i in range(size)]
-        best_value, _, _ = a_star(total_weight, items)
-        prob_weights = [total_weight] + [item.weight for item in items]
-        prob_values = [best_value] + [item.value for item in items]
-        df = pd.DataFrame({"value": prob_values, "weight": prob_weights})
-        df.to_csv(
-            f"data/strong_correlation/knapPI_{size}_{total_weight}.csv", index=False
-        )
+        for num_items in ITEM_SIZES:
+            print(f"\nGenerating: {correlation} - {num_items}")
+            items = generate_items(num_items, correlation)  # type: ignore
+
+            # capacity is 10% more than the sum of weights of half the items
+            half_items = items[: num_items // 2]
+            capacity = int(sum(w for _, w in half_items) * 1.1)
+
+            # get optimal value and items
+            optimal_value, res, _ = a_star(capacity, [Item(i[0], i[1]) for i in items])
+
+            # print some info about dataset
+            idf = pd.DataFrame(items, columns=["value", "weight"])
+            print(
+                f"Optimal value for {num_items} items ({correlation}): {optimal_value}; items: {sum(res)}; correlation:"
+            )
+            print(idf.corr())
+
+            # save to csv
+            filename = os.path.join(correlation_dir, f"knapsack_{num_items}.csv")
+            # add optimal value and capacity first
+            idf.loc[-1] = [optimal_value, capacity]
+            idf.index += 1
+            idf = idf.sort_index()
+            idf.to_csv(filename, index=False)
 
 
 if __name__ == "__main__":
-    SIZES = [5, 10, 15, 20, 25, 30]
-    generate_uncorrelated(SIZES, 100)
-    generate_medium_correlation(SIZES, 100)
-    generate_strong_correlation(SIZES, 100)
+    generate_dataset()
