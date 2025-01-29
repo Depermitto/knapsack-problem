@@ -41,7 +41,7 @@ class Specimen:
 def pbil(
     total_capacity: int | float,
     items: list[Item],
-    population_size: int = 100,
+    population_size: int = 300,
     num_generations: int = 1000,
     num_best: int = 10,
     learning_rate: float = 0.15,
