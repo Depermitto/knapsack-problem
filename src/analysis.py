@@ -7,6 +7,7 @@ from pathlib import Path
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor
+from scipy.interpolate import interp1d
 
 
 def __numfmt(x):
@@ -111,11 +112,18 @@ def test_algorithms(config: Config):
 
         plt.figure(figsize=(8, 5))
 
-        # x_vals = np.array(r[0] for r in pbil_ecdf_results)
-        # y_vals = np.array(r[1] for r in pbil_ecdf_results)
-        # x_mean = np.mean(x_vals)
-        # y_mean = np.mean(y_vals)
-        # plt.step(x_mean, y_mean, where="post", color="b", label="PBIL")
+        all_x_vals = [r[0] for r in pbil_ecdf_results]
+        all_y_vals = [r[1] for r in pbil_ecdf_results]
+        
+        # Define a common set of x-values (linear space covering all trials)
+        x_common = np.linspace(min(map(np.min, all_x_vals)), max(map(np.max, all_x_vals)), 500)
+        
+        # Interpolate each ECDF onto the common x-values
+        interpolated_y = [interp1d(x, y, bounds_error=False, fill_value=(0, 1))(x_common) for x, y in zip(all_x_vals, all_y_vals)]
+        
+        # Compute the mean ECDF
+        mean_y = np.mean(interpolated_y, axis=0)
+        plt.step(x_common, mean_y, where="post", color="b", label="PBIL")
 
         plt.xlabel("Wartość")
         plt.ylabel("Odsetek wartości mniejszych")
@@ -167,4 +175,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    process_correlation("uncorrelated")
