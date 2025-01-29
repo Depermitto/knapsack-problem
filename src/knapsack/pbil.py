@@ -44,7 +44,7 @@ def pbil(
     population_size: int = 100,
     num_generations: int = 1000,
     num_best: int = 10,
-    learning_rate: float = 0.1,
+    learning_rate: float = 0.15,
     mutation_probability: float = 0.1,
     mutation_std: float = 0.1,
     threshold: float = 1e-4,
