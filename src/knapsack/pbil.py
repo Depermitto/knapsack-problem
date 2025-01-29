@@ -2,6 +2,7 @@ from .typing import Item
 from functools import total_ordering
 import numpy as np
 import random
+from tqdm import tqdm
 
 
 @total_ordering
@@ -48,6 +49,7 @@ def pbil(
     mutation_probability: float = 0.1,
     mutation_std: float = 0.1,
     threshold: float = 1e-4,
+    show_progress: bool = False,
 ) -> tuple[int | float, list[bool], list[list[int | float]], list[float]]:
     """
     Solve the knapsack problem using the Population-Based Incremental Learning (PBIL) algorithm.
@@ -75,7 +77,13 @@ def pbil(
     best_value = 0
     best_specimen = None
     best_values: list[list[int | float]] = []
-    for i in range(1, num_generations + 1):
+    # optionally display the progress bar
+    iterator = (
+        tqdm(range(1, num_generations + 1))
+        if show_progress
+        else range(1, num_generations + 1)
+    )
+    for i in iterator:
         # generate population
         population = [
             Specimen(items, p, total_capacity) for _ in range(population_size)
